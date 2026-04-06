@@ -1,0 +1,5 @@
+  .search-bar button {
+    z-index: 1000 !important;
+    position: relative;
+    background: #222; /* hoặc màu phù hợp */
+  }

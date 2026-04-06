@@ -1,0 +1,99 @@
+<main id="content" class="wrapper layout-page">
+    <section class="z-index-2 position-relative pb-2 mb-12">
+
+<div class="bg-body-secondary mb-3">
+    <div class="container">
+        <nav class="py-4 lh-30px" aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center py-1 mb-0">
+                <li class="breadcrumb-item"><a title="Home" href="../index.html">Home</a></li>
+                <li class="breadcrumb-item"><a title="Home" href="/userprofile">My Profile</a></li>
+                       
+                    <li class="breadcrumb-item active" aria-current="page">Update Profile</li>
+                        
+            </ol>
+        </nav>
+    </div>
+</div>
+</section>
+<section class="container pb-14 pb-lg-19">
+<div class="text-center" ><h2 class="mb-6">MY PROFILE</h2></div>
+
+<form class="pt-12" (ngSubmit)="onSubmit()"  #profileForm="ngForm">
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+    <div *ngIf="message" class="alert alert-success">{{ message }}</div>
+    <div class="row">
+        <div class="col-lg-4 pb-lg-0 pb-14 order-lg-last">
+            
+                <div  class="card mb-8 rounded-4">
+                    <div class="card-header p-7 bg-transparent">
+                        <h4 class="fs-18px mb-0 font-weight-500">Media</h4>
+                    </div>
+                    <div class="card-body p-7">
+                        <div class="input-upload">
+                            <div class="mb-7">
+                                <img [src]="profile.image ||'../assets/images/dashboard/avatar-1.png'" width="102" class="d-block mx-auto" alt="">
+                            </div>
+                            <input class="form-control" type="text" [(ngModel)]="profile.image" name="image" placeholder="Image URL">
+                        </div>
+                    
+                </div> 
+            </div>
+
+   
+        </div>
+        <div class="col-lg-8 order-lg-first pe-xl-20 pe-lg-6">
+            <div class="checkout">
+
+
+    <h4 class="fs-4 pt-4 mb-7">Detail Information</h4>
+
+
+<div class="mb-7">
+    <label class="mb-5 fs-13px letter-spacing-01 fw-semibold text-uppercase">name</label>
+    <div class="row">
+        <div class="col-md-6 mb-md-0 mb-7">
+            <input type="text" class="form-control" id="first-name" name="first_name" placeholder="First Name" required [(ngModel)]="profile.first_name">
+        </div>
+        <div class="col-md-6">
+            <input type="text" class="form-control" id="last-name" name="last_name" placeholder="Last Name" required [(ngModel)]="profile.last_name">
+        </div>
+    </div>
+</div>
+
+<div class="mb-7">
+    <div class="row">
+        <div class=" mb-md-0 mb-7">
+            <label for="street-address" class="mb-5 fs-13px letter-spacing-01 fw-semibold text-uppercase">Street	Address</label>
+            <input type="text" class="form-control" id="street-address" name="address" placeholder="Address" required [(ngModel)]="profile.address">
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="mb-7">
+    <label class="mb-5 fs-13px letter-spacing-01 fw-semibold text-uppercase">info</label>
+    <div class="row">
+        <div class="col-md-6 mb-md-0 mb-7">
+            <input type="email" class="form-control" id="email" name="email" placeholder="Email" required [(ngModel)]="profile.email">
+        </div>
+        <div class="col-md-6">
+            <input type="number" class="form-control" id="phone" name="phone" placeholder="Phone number" required [(ngModel)]="profile.phone">
+        </div>
+    </div>
+</div>
+
+
+</div>
+
+            <div class="checkout mb-7">
+<button type="submit" class="btn btn-dark btn-hover-bg-primary btn-hover-border-primary px-11 mt-md-7 mt-4">Update Profile</button>
+</div>
+
+        </div>
+    </div>
+</form>
+</section>
+
+</main>

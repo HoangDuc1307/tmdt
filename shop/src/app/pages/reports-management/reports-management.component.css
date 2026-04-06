@@ -1,0 +1,31 @@
+/* Reports Management CSS */
+.page {
+    padding: 0;
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.toolbar {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.input {
+    min-width: 240px;
+}
+
+.w-reason {
+    max-width: 260px;
+}
+
+@media (max-width: 600px) {
+    .input {
+        min-width: unset;
+        width: 100%;
+    }
+}

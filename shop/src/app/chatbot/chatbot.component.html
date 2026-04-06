@@ -1,0 +1,27 @@
+<!-- Nút chat nổi luôn hiển thị -->
+<button class="chat-float-btn" (click)="showChat = !showChat" aria-label="Mở chat">
+  <span class="chat-float-icon">💬</span>
+</button>
+
+<!-- Khung chat nhỏ -->
+<div class="chatbot-popup" *ngIf="showChat">
+  <div class="chatbot-header">
+    <span>Chat support</span>
+    <button class="close-btn" (click)="showChat = false">×</button>
+  </div>
+  <div class="chatbot-container">
+    <div class="chat-history" #chatHistoryDiv>
+      <div *ngFor="let msg of chatHistory; let last = last">
+        <div [ngClass]="{'user-message': msg.sender === 'user', 'bot-message': msg.sender === 'bot', 'last-message': last}">
+          <b>{{ msg.sender === 'user' ? 'Bạn' : 'Bot' }}:</b>
+          <span *ngIf="msg.text && msg.text[0] === '{'">{{ msg.text | json }}</span>
+          <span *ngIf="!msg.text || msg.text[0] !== '{'">{{ msg.text }}</span>
+        </div>
+      </div>
+    </div>
+    <form (ngSubmit)="sendMessage()">
+      <input [(ngModel)]="userMessage" name="message" placeholder="Nhập tin nhắn..." required autocomplete="off" />
+      <button type="submit">Gửi</button>
+    </form>
+  </div>
+</div>

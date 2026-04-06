@@ -1,0 +1,166 @@
+<div class="dashboard-page-content" data-animated-id="1">
+    <div class="row mb-9 align-items-center">
+        <div class="col-sm-6 mb-8 mb-sm-0">
+            <h2 class="fs-4 mb-0">Dashboard</h2>
+            <p class="mb-0">Overall system statistics</p>
+        </div>
+        <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end gap-2">
+            <select id="chartDays" name="chartDays" class="form-select w-auto" [ngModel]="chartDays" (ngModelChange)="chartDays=$event; onChartDaysChange()">
+            <select id="chartDays" name="chartDays" class="form-select w-auto" [ngModel]="chartDays" (ngModelChange)="chartDays=$event; onChartDaysChange()">
+                <option [value]="7">7 Days</option>
+                <option [value]="14">14 Days</option>
+                <option [value]="30">30 Days</option>
+            </select>
+            </select>
+            <button class="btn btn-primary" (click)="loadAll()" [disabled]="loadingSummary || loadingChart">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+            </button>
+            <button class="btn btn-primary" (click)="saveReport()" [disabled]="loadingSummary || loadingChart || savingReport || !summary">
+                <i class="fas fa-save me-1" *ngIf="!savingReport"></i>
+                <span class="d-inline-block">{{ savingReport ? 'Saving...' : 'Save Report' }}</span>
+            </button>
+        </div>
+    </div>
+    
+    <p *ngIf="saveMessage" class="alert alert-success mt-2">✅ {{ saveMessage }}</p>
+
+    <!-- Stats row 1 -->
+    <div class="row">
+        <!-- Tổng người dùng -->
+        <div class="col-sm-6 col-xxl-3 mb-7">
+            <div class="card rounded-4">
+                <div class="card-body p-7">
+                    <div class="d-flex">
+                        <div class="me-6">
+                            <span class="square d-flex align-items-center justify-content-center fs-5 badge rounded-circle text-info bg-info-light" style="--square-size: 48px">
+                                <i class="fas fa-users"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4 card-title">Total Users</h6>
+                            <span class="fs-4 d-block font-weight-500 text-primary lh-12">{{ summary.total_users }}</span>
+                            <span class="fs-14px">Registered accounts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tổng bài đăng -->
+        <div class="col-sm-6 col-xxl-3 mb-7">
+            <div class="card rounded-4">
+                <div class="card-body p-7">
+                    <div class="d-flex">
+                        <div class="me-6">
+                            <span class="square d-flex align-items-center justify-content-center fs-5 badge rounded-circle text-success bg-success-light" style="--square-size: 48px">
+                                <i class="fas fa-box-open"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4 card-title">Total Listings</h6>
+                            <span class="fs-4 d-block font-weight-500 text-primary lh-12">{{ summary.total_listings }}</span>
+                            <span class="fs-14px">Active listings</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tổng giao dịch -->
+        <div class="col-sm-6 col-xxl-3 mb-7">
+            <div class="card rounded-4">
+                <div class="card-body p-7">
+                    <div class="d-flex">
+                        <div class="me-6">
+                            <span class="square d-flex align-items-center justify-content-center fs-5 badge rounded-circle text-warning bg-warning-light" style="--square-size: 48px">
+                                <i class="fas fa-shopping-cart"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4 card-title">Total Transactions</h6>
+                            <span class="fs-4 d-block font-weight-500 text-primary lh-12">{{ summary.total_transactions }}</span>
+                            <span class="fs-14px">Completed transactions</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doanh thu -->
+        <div class="col-sm-6 col-xxl-3 mb-7">
+            <div class="card rounded-4">
+                <div class="card-body p-7">
+                    <div class="d-flex">
+                        <div class="me-6">
+                            <span class="square d-flex align-items-center justify-content-center fs-5 badge rounded-circle text-green bg-green-light" style="--square-size: 48px">
+                                <i class="fas fa-dollar-sign"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4 card-title">Revenue</h6>
+                            <span class="fs-4 d-block font-weight-500 text-primary lh-12">{{ summary.total_revenue | number:'1.0-0' }}đ</span>
+                            <span class="fs-14px">Total lifetime revenue.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats row 2 -->
+    <div class="row">
+        <!-- Bài đăng theo chartDays -->
+        <div class="col-sm-6 col-xxl-3 mb-7">
+            <div class="card rounded-4">
+                <div class="card-body p-7">
+                    <div class="d-flex">
+                        <div class="me-6">
+                            <span class="square d-flex align-items-center justify-content-center fs-5 badge rounded-circle text-primary bg-primary-light" style="--square-size: 48px">
+                                <i class="fas fa-calendar-alt"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4 card-title">Listings ({{ chartDays }} Days)</h6>
+                            <span class="fs-4 d-block font-weight-500 text-primary lh-12">{{ summary.listings_last_n_days }}</span>
+                            <span class="fs-14px">In the last {{ chartDays }} days</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Giao dịch theo chartDays -->
+        <div class="col-sm-6 col-xxl-3 mb-7">
+            <div class="card rounded-4">
+                <div class="card-body p-7">
+                    <div class="d-flex">
+                        <div class="me-6">
+                            <span class="square d-flex align-items-center justify-content-center fs-5 badge rounded-circle text-danger bg-danger-light" style="--square-size: 48px">
+                                <i class="fas fa-credit-card"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4 card-title">Transactions ({{ chartDays }} Days)</h6>
+                            <span class="fs-4 d-block font-weight-500 text-primary lh-12">{{ summary.transactions_last_n_days }}</span>
+                            <span class="fs-14px">In the last {{ chartDays }} days</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Row -->
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card rounded-4 p-7 mb-7">
+                <h5 class="card-title fs-6 mb-6"><i class="fas fa-chart-line me-2 text-primary"></i>Growth Chart ({{ chartDays }} Days)</h5>
+                <div class="card-body p-0">
+                    <div style="height: 400px;">
+                        <canvas #growthChart class="chartjs"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

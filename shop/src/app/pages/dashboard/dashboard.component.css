@@ -1,0 +1,55 @@
+/* Dashboard component styles */
+.dashboard {
+    padding: 0;
+}
+
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.dash-header-left h2 {
+    margin: 0 0 0.2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.dash-header-left p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.dash-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Stats grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Chart row */
+.chart-row {
+    margin-bottom: 1.5rem;
+}
+
+.save-msg {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+    padding: 0.5rem 0.85rem;
+    background: #f0fdf4;
+    border-radius: 6px;
+    border-left: 3px solid var(--success);
+}

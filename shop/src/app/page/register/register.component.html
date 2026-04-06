@@ -1,0 +1,38 @@
+
+<main id="content" class="wrapper layout-page">
+  <section class="pb-lg-20 pb-16" data-animated-id="1">
+    <div class="bg-body-secondary py-5">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-site py-0 d-flex justify-content-center">
+          <li class="breadcrumb-item"><a class="text-decoration-none text-body" href="/">Home</a></li>
+          <li class="breadcrumb-item active pl-0 d-flex align-items-center" aria-current="page">Register</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="container">
+      <div class=" text-center pt-13 mb-12 mb-lg-15">
+        <div class="text-center"><h2 class="fs-36px mb-11 mb-lg-14">Register</h2></div>
+      </div>
+      <div class="col-lg-5 col-md-8 mx-auto">
+        <form (ngSubmit)="onSubmit()">
+          <div class="mb-6">
+            <label for="username" class="visually-hidden">Username</label>
+            <input name="username" id="username" type="text" class="form-control" placeholder="Username" required [(ngModel)]="username"/>
+          </div>
+          <div class="mb-6">
+            <label for="email" class="visually-hidden">Email address</label>
+            <input name="email" id="email" type="email" class="form-control" placeholder="Your email" required [(ngModel)]="email"/>
+          </div>
+          <div class="mb-7">
+            <label for="password" class="visually-hidden">Password</label>
+            <input name="password" id="password" type="password" class="form-control" placeholder="Password" required [(ngModel)]="password"/>
+          </div>
+          <button type="submit" class="btn btn-primary w-100" >Sign Up</button>
+        </form>
+      </div>
+    </div>
+  </section>
+  <div *ngIf="message" class="alert alert-success mt-3">{{ message }}</div>
+  <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+</main> 
+<app-footer></app-footer>

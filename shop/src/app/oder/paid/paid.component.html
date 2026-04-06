@@ -1,0 +1,165 @@
+<section class="z-index-2 position-relative pb-2 mb-12">
+    <div class="bg-body-secondary mb-3">
+        <div class="container">
+            <nav aria-label="breadcrumb" class="py-4 lh-30px">
+                <ol class="breadcrumb justify-content-center py-1 mb-0">
+                    <li class="breadcrumb-item">
+                        <a title="Home" href="../index.html">Home</a>
+                    </li>
+                    <li aria-current="page" class="breadcrumb-item active">Order</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</section>
+<div class="dashboard-page-content" data-animated-id="1">
+    <div class="row mb-9 align-items-center justify-content-between">
+        <div class="col-sm-6 mb-8 mb-sm-0">
+            <h2 class="fs-4 mb-0">Order</h2>
+            <p class="mb-0">Thank you for your order.</p>
+        </div>
+    </div>
+    <div *ngIf="message" class="alert alert-info">{{ message }}</div>
+    <div *ngIf="order">
+    <div class="card rounded-4">
+        <header class="card-header bg-transparent p-7">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-lg-0 mb-6">
+                    <span class="d-inline-block"><i class="far fa-calendar me-3"></i>{{ order.created_at | date:'medium' }}</span>
+                    <br>
+                    <small class="text-muted">Order ID: {{ order.id }}</small>
+                </div>
+            </div>
+        </header>
+        <div class="card-body p-7">
+            <div class="row mb-8 mt-4 order-info-wrap">
+                <div class="col-md-4 mb-md-0 mb-7">
+                    <div class="d-flex flex-nowrap">
+                        <div class="icon-wrap">
+                            <span class="rounded-circle px-6 py-5 bg-green-light me-6 text-green d-inline-block">
+                               <i class="fas fa-user px-1"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4">Customer</h6>
+                            <p class="mb-4">
+                                {{ order.receiver_name }} <br>
+                                {{ order.email }} <br>
+                                {{ order.phone }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-md-0 mb-7">
+                    <div class="d-flex flex-nowrap">
+                        <div class="icon-wrap">
+                            <span class="rounded-circle p-5 bg-green-light me-6 text-green d-inline-block">
+                               <i class="fas fa-truck px-2"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4">Order info</h6>
+                            <p class="mb-4">
+                                Status: {{ order.status }} <br>
+                                Total: {{ order.total_price |currency:'VND':'symbol':'1.0-0' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex flex-nowrap">
+                        <div class="icon-wrap">
+                            <span class="rounded-circle p-5 bg-green-light me-6 text-green d-inline-block">
+                               <i class="fas fa-truck px-2"></i>
+                            </span>
+                        </div>
+                        <div class="media-body">
+                            <h6 class="mb-4">Deliver to</h6>
+                            <p class="mb-4">
+                                {{ order.address }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Unit Price</th>
+                                <th>Quantity</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                            </thead>
+                        </table>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-borderless mb-0">
+                                <tbody>
+                                    <tr *ngFor="let item of orderItems">
+                                        <td>
+                                            <div class="d-flex align-items-center flex-nowrap">
+                                                <img [src]="item.product_image" width="60" height="80" [alt]="item.product_name">
+                                                <span class="ms-6">
+                                                    <p class="fw-semibold text-body-emphasis mb-0">{{ item.product_name }}</p>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>{{ item.product_price |currency:'VND':'symbol':'1.0-0' }}</td>
+                                        <td>{{ item.quantity }}</td>
+                                        <td class="text-end">{{ (item.product_price * item.quantity) |currency:'VND':'symbol':'1.0-0' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex flex-column align-items-end justify-content-end mt-3">
+                            <div class="mw-40 w-40">
+                                <div class="d-flex w-100">
+                                    <span class="d-inline-block w-50">Subtotal:</span>
+                                    <span class="d-inline-block w-50 text-end fw-normal">{{ order.total_price |currency:'VND':'symbol':'1.0-0' }}</span>
+                                </div>
+                                <div class="d-flex w-100">
+                                    <span class="d-inline-block w-50">Shipping cost:</span>
+                                    <span class="d-inline-block w-50 text-end fw-normal">$0</span>
+                                </div>
+                                <div class="d-flex w-100 mb-5">
+                                    <span class="d-inline-block w-50">Grand total:</span>
+                                    <span class="d-inline-block w-50 text-end fs-5 fw-semibold">{{ order.total_price |currency:'VND':'symbol':'1.0-0' }}</span>
+                                </div>
+                                <div class="d-flex w-100">
+                                    <span class="d-inline-block w-50 text-muted">Status:</span>
+                                    <span class="d-inline-block w-50 text-end fs-20 fw-semibold">
+                                        <span class="badge rounded-pill alert alert-success text-success fs-12px px-4 py-3">Payment done</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 offset-lg-1">
+                    <div class="box shadow-sm bg-body-tertiary p-6">
+                        <h6 class="mb-6">Payment info</h6>
+                        <div>
+                            <div class="d-flex">
+                                <div class="me-4">
+                                    <img src="../assets/images/dashboard/master-card.png" class="border" alt="Card" width="28">
+                                </div>
+                                <p class="mb-0"> Master Card **** ****4768</p>
+                            </div>
+                            <p class="mb-0">
+                                Business name: Grand Market LLC <br>
+                                Phone: +1 (800) 555-154-52
+                            </p>
+                        </div>
+                    </div>
+                    <div class="h-25 pt-8">
+                        <button class="btn btn-primary" routerLink="/">Continue Shopping</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>

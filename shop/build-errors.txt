@@ -1,0 +1,124 @@
+﻿Node.js version v23.11.1 detected.
+Odd numbered Node.js versions will not enter LTS status and should not be used for production. For more information, please see https://nodejs.org/en/about/previous-releases/.
+[33mΓ¥»[39m Building...
+[32mΓ£ö[39m Building...
+Application bundle generation failed. [5.304 seconds]
+
+[1m[33m[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: RouterOutlet is not used within the template of ChatManageComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/admin/chatmanage/chatmanage.component.ts:30:12:
+[37m      30 Γöé   imports: [[32mRouterOutlet[37m, FormsModule, RouterModule, CommonModule,...
+         Γò╡             [32m~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: RouterOutlet is not used within the template of DashBoardComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/admin/dashboard/dashboard.component.ts:15:64:
+[37m      15 Γöé ...nent, HeaderAdminComponent,CommonModule,[32mRouterOutlet[37m,FormsModule],
+         Γò╡                                            [32m~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: RouterOutlet is not used within the template of AddProductComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/admin/product-manage/add-product/add_product.component.ts:11:11:
+[37m      11 Γöé   imports:[[32mRouterOutlet[37m,FormsModule,RouterModule,CommonModule,Side...
+         Γò╡            [32m~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: RouterOutlet is not used within the template of CategoryComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/admin/product-manage/category/category.component.ts:14:12:
+[37m      14 Γöé   imports: [[32mRouterOutlet[37m,FormsModule,RouterModule,CommonModule,Sid...
+         Γò╡             [32m~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: RouterOutlet is not used within the template of ProductManageComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/admin/product-manage/product-manage.component.ts:12:11:
+[37m      12 Γöé   imports:[[32mRouterOutlet[37m,FormsModule,RouterModule,CommonModule,Side...
+         Γò╡            [32m~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: RouterOutlet is not used within the template of UpdateProductComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/admin/product-manage/update-product/update_product.component.ts:10:11:
+[37m      10 Γöé   imports:[[32mRouterOutlet[37m,FormsModule,RouterModule,CommonModule,Side...
+         Γò╡            [32m~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mDuplicate member "isLoggedIn" in class body[0m [duplicate-class-member]
+System.Management.Automation.RemoteException
+    src/app/api/auth.service.ts:205:4:
+[37m      205 Γöé     [32misLoggedIn[37m() {
+          Γò╡     [32m~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+  The original member "isLoggedIn" is here:
+System.Management.Automation.RemoteException
+    src/app/api/auth.service.ts:186:4:
+[37m      186 Γöé     [32misLoggedIn[37m() {
+          Γò╡     [32m~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: LoginComponent is not used within the template of AppComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/app.component.ts:13:26:
+[37m      13 Γöé   imports: [RouterOutlet, [32mLoginComponent[37m, CommonModule,HeaderCompo...
+         Γò╡                           [32m~~~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: HeaderComponent is not used within the template of LoginComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/page/login/login.component.ts:13:12:
+[37m      13 Γöé   imports: [[32mHeaderComponent[37m, FooterComponent, FormsModule, CommonM...
+         Γò╡             [32m~~~~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: HeaderComponent is not used within the template of RegisterComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/page/register/register.component.ts:13:12:
+[37m      13 Γöé   imports: [[32mHeaderComponent[37m, FormsModule, CommonModule, FooterComp...
+         Γò╡             [32m~~~~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: HeaderComponent is not used within the template of ProductComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/product/product.component.ts:16:39:
+[37m      16 Γöé ...msModule, CommonModule, [32mHeaderComponent[37m, FooterComponent, Route...
+         Γò╡                            [32m~~~~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: FooterComponent is not used within the template of ProductComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/product/product.component.ts:16:56:
+[37m      16 Γöé ...odule, HeaderComponent, [32mFooterComponent[37m, RouterModule, StarRati...
+         Γò╡                            [32m~~~~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: HeaderComponent is not used within the template of MyProductsComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/user/my-products/my-products.component.ts:11:53:
+[37m      11 Γöé ...ule, RouterModule, FormsModule, [32mHeaderComponent[37m, FooterComponent],
+         Γò╡                                    [32m~~~~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[33mΓû▓ [43;33m[[43;30mWARNING[43;33m][0m [1mTS-998113: FooterComponent is not used within the template of MyProductsComponent[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/user/my-products/my-products.component.ts:11:70:
+[37m      11 Γöé ...ule, RouterModule, FormsModule, HeaderComponent, [32mFooterComponent[37m],
+         Γò╡                                                     [32m~~~~~~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2393: Duplicate function implementation.[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/api/auth.service.ts:229:2:
+[37m      229 Γöé   [32misLoggedIn[37m(): boolean {
+          Γò╡   [32m~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+System.Management.Automation.RemoteException
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2393: Duplicate function implementation.[0m [1m[35m[plugin angular-compiler][0m
+System.Management.Automation.RemoteException
+    src/app/api/auth.service.ts:252:2:
+[37m      252 Γöé   [32misLoggedIn[37m(): boolean {
+          Γò╡   [32m~~~~~~~~~~[0m
+System.Management.Automation.RemoteException
+[39m[22m

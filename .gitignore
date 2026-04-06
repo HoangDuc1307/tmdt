@@ -1,0 +1,30 @@
+# --- File của Hệ điều hành / IDE / Cache ---
+.DS_Store
+Thumbs.db
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+.history/
+
+# --- File quản lý dự án (Antigravity) ---
+implementation_plan.md
+task.md
+walkthrough.md
+
+# --- Các thư mục phụ thuộc và môi trường (Gốc) ---
+node_modules/
+dist/
+build/
+venv/
+env/
+.env
+.env.*
+db.sqlite3
+*.log
+
+# Lưu ý: Các file .gitignore bên trong thư mục /shop và /shop-be 
+# sẽ tiếp tục quản lý các quy tắc riêng cho từng dự án đó.

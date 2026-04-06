@@ -1,0 +1,49 @@
+/* Listings Approval CSS */
+.page {
+    padding: 0;
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.toolbar {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.input {
+    min-width: 260px;
+}
+
+.w-title {
+    max-width: 280px;
+}
+
+.small {
+    font-size: 0.8rem;
+}
+
+/* Tab dot indicator */
+.tab-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+/* Action buttons in table */
+.table td .btn {
+    white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+    .input {
+        min-width: unset;
+        width: 100%;
+    }
+}

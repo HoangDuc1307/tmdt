@@ -1,0 +1,102 @@
+<div class="dashboard-page-content" data-animated-id="1">
+    <div class="row mb-9 align-items-center justify-content-between">
+        <div class="col-sm-6 mb-8 mb-sm-0">
+            <h2 class="fs-4 mb-0">Accounts Management</h2>
+            <p class="mb-0">Block or unblock violating user accounts.</p>
+        </div>
+        <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end gap-2">
+            <select id="userStatusFilter" name="statusFilter" class="form-select w-auto" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+            <select id="userStatusFilter" name="statusFilter" class="form-select w-auto" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+                <option value="ALL">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="BLOCKED">Blocked</option>
+            </select>
+            </select>
+            <input id="userSearch" name="search" class="form-control w-auto" type="text"
+                   placeholder="🔍 Search by username or email..."
+                   [ngModel]="search()" (ngModelChange)="search.set($event)" />
+            <button class="btn btn-primary" (click)="load()" [disabled]="loading()">🔄 Refresh</button>
+        </div>
+    </div>
+    
+    <div *ngIf="error()" class="alert alert-danger">⚠️ {{ error() }}</div>
+    <div *ngIf="loading()" class="text-muted mb-4">⏳ Loading...</div>
+
+    <div class="card mb-4 rounded-4 p-7" *ngIf="!loading()">
+        <div class="card-body py-7 px-0">
+            <div class="row" *ngIf="filtered().length; else empty">
+                <!-- ... grid items ... -->
+                <div class="col-sm-6 col-md-4 col-lg-3 mb-9" *ngFor="let u of filtered()">
+                    <div class="card card-user rounded-4 h-100">
+                        <div class="card-header text-center pt-4">
+                            <!-- Placeholder avatar -->
+                            <img class="img-avatar loaded" src="./assets/images/dashboard/avatar-1.png" alt="Avatar" width="112" height="112" loading="lazy">
+                        </div>
+                        <div class="card-body text-center p-4 d-flex flex-column">
+                            <h5 class="card-title mt-4 fs-6 mb-2 text-truncate" [title]="u.username">{{ u.username }}</h5>
+                            <div class="card-text text-muted mb-auto">
+                                <p class="mb-0 text-truncate" [title]="u.email">{{ u.email }}</p>
+                                <p class="mb-0 fs-12px mt-1">ID: #{{ u.id }}</p>
+                                <p class="mb-2 fs-12px">Created at: {{ u.date_joined | date:'dd/MM/yyyy' }}</p>
+                                <span class="badge" [ngClass]="u.is_active ? 'badge-soft-success text-success' : 'badge-soft-danger text-danger'">
+                                    {{ u.is_active ? '✅ Active' : '🔒 Blocked' }}
+                                </span>
+                                <span class="badge badge-soft-warning text-warning ms-1">
+                                    ⚠️ {{ u.warning_count || 0 }}
+                                </span>
+                                <p *ngIf="!u.is_active" class="mt-2 mb-0 fs-11px text-danger text-truncate italic" [title]="u.block_reason">
+                                    <i>Reason: {{ u.block_reason || 'Violation' }}</i>
+                                </p>
+                            </div>
+                            <div class="mt-4 d-flex flex-column gap-2">
+                                <a class="btn btn-sm btn-outline-primary w-100" [routerLink]="['/pages/users', u.id]">📄 View Details</a>
+                                <button class="btn btn-sm btn-outline-danger w-100" *ngIf="u.is_active" (click)="block(u)">🔒 Block</button>
+                                <button class="btn btn-sm btn-outline-success w-100" *ngIf="!u.is_active" (click)="unblock(u)">🔓 Unblock</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="col-12 mt-4">
+                    <app-pagination 
+                        [totalItems]="totalItems()" 
+                        [pageSize]="pageSize" 
+                        [currentPage]="currentPage()" 
+                        (pageChange)="onPageChange($event)">
+                    </app-pagination>
+                </div>
+            </div>
+            <ng-template #empty>
+                <div class="text-center py-5 text-muted">😕 No matching users found.</div>
+            </ng-template>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Khóa Tài Khoản -->
+<div class="modal-backdrop fade show" *ngIf="showBlockModal()"></div>
+<div class="modal fade show d-block" *ngIf="showBlockModal()" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">🚫 Block User Account</h5>
+                <button type="button" class="btn-close" (click)="showBlockModal.set(false)"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-2 fw-medium">Account: <span class="text-danger">&#64;{{ selectedUserForBlock()?.username }}</span></p>
+                <p class="text-muted small mb-3">Please enter a reason for blocking this account. The reason will be saved in the system logs.</p>
+                <div class="form-floating">
+                    <textarea class="form-control" placeholder="Enter reason..." style="height: 120px" 
+                        [value]="blockReasonInput()" (input)="blockReasonInput.set(area.value)" #area></textarea>
+                    <label>Violation Reason</label>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-link text-muted text-decoration-none" (click)="showBlockModal.set(false)">Cancel</button>
+                <button type="button" class="btn btn-danger px-4 rounded-3" (click)="confirmBlock()">Confirm Block</button>
+            </div>
+        </div>
+    </div>
+</div>
+

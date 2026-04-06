@@ -1,0 +1,27 @@
+.product-img-small {
+    max-width:180px;
+    max-height:240px;
+    width:100%;
+    height:auto;
+    margin:0 auto;
+    display:block;
+    
+}
+
+/* Admin Dashboard layout styles */
+.wrapper {
+    display: block;
+    min-height: 100vh;
+}
+
+.main {
+    padding: 1.75rem 2rem;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .main {
+        padding: 1.25rem 1rem;
+    }
+}

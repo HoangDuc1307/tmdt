@@ -1,0 +1,14 @@
+/* Fix sidebar width and prevent layout issues */
+.db-sidebar {
+  flex: 0 1 320px;
+  max-width: 320px;
+  min-width: 320px;
+}
+
+@media (max-width: 991.98px) {
+  .db-sidebar {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: auto;
+  }
+}

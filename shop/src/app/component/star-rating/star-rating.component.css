@@ -1,0 +1,22 @@
+.star-rating {
+    display: inline-flex;
+    font-size: 1.5rem;
+  }
+  
+  .star {
+    cursor: pointer;
+    color: #ccc; /* Màu khi chưa chọn */
+    transition: color 0.2s;
+  }
+  
+  .star.filled {
+    color: #f39c12; /* Màu vàng khi được chọn */
+  }
+  
+  .star:hover ~ .star {
+    color: #ccc;
+  }
+  
+  .readonly .star {
+    cursor: default;
+  }

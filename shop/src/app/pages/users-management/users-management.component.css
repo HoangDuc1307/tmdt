@@ -1,0 +1,59 @@
+/* Users Management CSS */
+.page {
+    padding: 0;
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.toolbar {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.input {
+    min-width: 280px;
+}
+
+.w-title {
+    max-width: 280px;
+}
+
+.small {
+    font-size: 0.8rem;
+}
+
+/* User card fixes */
+.card-user .card-header {
+    min-height: 60px;
+    padding-top: 1.5rem;
+    padding-bottom: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-user .card-header img.img-avatar {
+    position: relative;
+    z-index: 1;
+    border: 3px solid rgba(255,255,255,0.15);
+    border-radius: 50%;
+}
+
+.card-user .card-body {
+    padding-top: 0.5rem !important;
+}
+
+.card-user .card-title {
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+    .input {
+        min-width: unset;
+        width: 100%;
+    }
+}

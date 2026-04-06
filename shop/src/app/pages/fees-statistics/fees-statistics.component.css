@@ -1,0 +1,53 @@
+/* Fees Statistics CSS */
+.page {
+    padding: 0;
+}
+
+.fees-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.fees-header-left h2 {
+    margin: 0 0 0.2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.fees-header-left p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.fees-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-row {
+    margin-bottom: 1.5rem;
+}
+
+.save-msg {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+    padding: 0.5rem 0.85rem;
+    background: #f0fdf4;
+    border-radius: 6px;
+    border-left: 3px solid var(--success);
+}

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../api/auth.service';
 import { ReviewService } from '../api/review.service';
+import { UserReportService } from '../api/user-report.service';
 import { StarRatingComponent } from '../component/star-rating/star-rating.component';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
@@ -37,6 +38,22 @@ export class ProductComponent implements OnInit {
   newSellerReviewComment: string = '';
   submittingSellerReview: boolean = false;
 
+  // Báo cáo người bán → admin (UserReport)
+  reportModalOpen = false;
+  reportCategory = 'other';
+  reportReason = '';
+  reportImageFiles: File[] = [];
+  reportSubmitting = false;
+  reportError = '';
+
+  readonly reportCategoryOptions = [
+    { key: 'fraud', label: 'Lừa đảo / không giao hàng' },
+    { key: 'wrong_item', label: 'Hàng không đúng mô tả' },
+    { key: 'harassment', label: 'Quấy rối / ngôn từ xấu' },
+    { key: 'spam', label: 'Spam / tài khoản ảo' },
+    { key: 'other', label: 'Khác' },
+  ];
+
   // Tab control
   activeReviewTab: string = 'product';
 
@@ -54,11 +71,19 @@ export class ProductComponent implements OnInit {
     return Math.max(0, Math.min(5, sum / this.sellerReviews.length));
   }
 
+  /** Cho phép báo cáo khi đã login và không phải chính người bán sản phẩm này. */
+  get canReportSeller(): boolean {
+    const me = this.authService.getUserInfo();
+    if (!this.product?.seller || !me?.id) return false;
+    return Number(me.id) !== Number(this.product.seller);
+  }
+
   constructor(
     public authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
-    private reviewService: ReviewService
+    private reviewService: ReviewService,
+    private userReportService: UserReportService
   ) {}
 
   ngOnInit(): void {
@@ -226,6 +251,71 @@ export class ProductComponent implements OnInit {
     if (el) {
       el.src = 'assets/images/products/giay.jpg';
     }
+  }
+
+  openSellerReportModal(): void {
+    if (!this.authService.isLoggedIn()) {
+      alert('Vui lòng đăng nhập để báo cáo người bán.');
+      return;
+    }
+    if (!this.canReportSeller) {
+      alert('Bạn không thể báo cáo chính shop của mình.');
+      return;
+    }
+    this.reportCategory = 'other';
+    this.reportReason = '';
+    this.reportImageFiles = [];
+    this.reportError = '';
+    this.reportModalOpen = true;
+  }
+
+  closeSellerReportModal(): void {
+    this.reportModalOpen = false;
+  }
+
+  onReportImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const list = input.files ? Array.from(input.files) : [];
+    this.reportImageFiles = list.slice(0, 5);
+    input.value = '';
+  }
+
+  removeReportImageAt(i: number): void {
+    this.reportImageFiles = this.reportImageFiles.filter((_, idx) => idx !== i);
+  }
+
+  submitSellerReport(): void {
+    if (!this.product?.seller) return;
+    const reason = this.reportReason.trim();
+    if (reason.length < 15) {
+      this.reportError = 'Vui lòng mô tả chi tiết ít nhất 15 ký tự.';
+      return;
+    }
+    this.reportError = '';
+    this.reportSubmitting = true;
+    this.userReportService
+      .submitUserReport(
+        {
+          target_user_id: Number(this.product.seller),
+          reason,
+          category: this.reportCategory,
+          product_id: this.product.id,
+        },
+        this.reportImageFiles
+      )
+      .subscribe({
+        next: () => {
+          this.reportSubmitting = false;
+          this.closeSellerReportModal();
+          alert('Đã gửi báo cáo. Admin sẽ xem xét sớm nhất có thể.');
+        },
+        error: (err) => {
+          this.reportSubmitting = false;
+          const d = err.error?.detail;
+          this.reportError =
+            typeof d === 'string' ? d : Array.isArray(d) ? d.map((x: any) => x || '').join(' ') : 'Gửi báo cáo thất bại, vui lòng thử lại.';
+        },
+      });
   }
 
   /** Mở chi tiết sản phẩm từ block "You may also like" (ảnh / vùng ảnh) */

@@ -4,6 +4,7 @@ Quản lý tài khoản (Users) - Admin khóa/mở khóa user.
 - unblock: POST /id/unblock/ → đảo ngược
 """
 from django.contrib.auth.models import User
+from django.db.models import Count, Q
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -15,10 +16,22 @@ from ..serializers import UserSerializer, ListingSerializer, TransactionListSeri
 
 # Quản lý người dùng - Lọc bớt Admin/Staff ra cho đỡ vướng mắt, tránh khóa nhầm đồng nghiệp
 class AdminUserViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = User.objects.filter(is_superuser=False, is_staff=False).order_by('id')
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
 
+    def get_queryset(self):
+        return (
+            User.objects.filter(is_superuser=False, is_staff=False)
+            .annotate(
+                _resolved_reports=Count(
+                    'reports_received',
+                    filter=Q(reports_received__status='RESOLVED'),
+                )
+            )
+            .order_by('id')
+        )
+
+    @action(detail=True, methods=['post'])
     def block(self, request, pk=None):
         # Khóa tài khoản kèm lý do cụ thể
         user = self.get_object()

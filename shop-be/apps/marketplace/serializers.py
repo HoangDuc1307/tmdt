@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from .models import Listing, UserReport, Transaction, UserProfile, ReportEvidence, ListingImage
@@ -27,8 +28,8 @@ class ListingSerializer(serializers.ModelSerializer):
 # Thông tin User - Gom cả số gậy (cảnh báo) và lý do khóa từ Profile vào cho dễ quản lý
 class UserSerializer(serializers.ModelSerializer):
     is_blocked = serializers.SerializerMethodField()
-    warning_count = serializers.IntegerField(source='userprofile.warning_count', read_only=True)
-    block_reason = serializers.CharField(source='userprofile.block_reason', read_only=True)
+    warning_count = serializers.SerializerMethodField()
+    block_reason = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -37,8 +38,29 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_blocked(self, obj):
         try:
             return obj.userprofile.is_blocked
-        except UserProfile.DoesNotExist:
+        except ObjectDoesNotExist:
             return False
+
+    def get_warning_count(self, obj):
+        """
+        Số cảnh cáo hiển thị = max(giá trị lưu trên UserProfile, số báo cáo RESOLVED).
+        Tránh badge luôn 0 khi: chưa có profile, lỗi truy cập O2O, hoặc admin đổi trạng thái
+        sang RESOLVED qua set_status (không đi qua resolve nên chưa +warning_count).
+        """
+        try:
+            stored = obj.userprofile.warning_count
+        except ObjectDoesNotExist:
+            stored = 0
+        resolved_n = getattr(obj, '_resolved_reports', None)
+        if resolved_n is None:
+            resolved_n = UserReport.objects.filter(target_user=obj, status='RESOLVED').count()
+        return max(stored, resolved_n)
+
+    def get_block_reason(self, obj):
+        try:
+            return obj.userprofile.block_reason
+        except ObjectDoesNotExist:
+            return None
 
 
 # Xử lý ảnh bằng chứng trong báo cáo

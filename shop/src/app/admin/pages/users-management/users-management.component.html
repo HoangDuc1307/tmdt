@@ -39,8 +39,9 @@
                                 <span class="badge" [ngClass]="u.is_active ? 'badge-soft-success text-success' : 'badge-soft-danger text-danger'">
                                     {{ u.is_active ? '✅ Hoạt động' : '🔒 Bị khóa' }}
                                 </span>
-                                <span class="badge badge-soft-warning text-warning ms-1">
-                                    ⚠️ {{ u.warning_count || 0 }}
+                                <span class="badge badge-soft-warning text-warning ms-1"
+                                      title="Số lần cảnh cáo (cộng khi admin xử lý báo cáo: Xác nhận vi phạm)">
+                                    ⚠️ {{ u.warning_count ?? 0 }}
                                 </span>
                                 <p *ngIf="!u.is_active" class="mt-2 mb-0 fs-11px text-danger text-truncate italic" [title]="u.block_reason">
                                     <i>Lý do: {{ u.block_reason || 'Vi phạm' }}</i>

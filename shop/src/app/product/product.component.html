@@ -126,9 +126,22 @@
 
   <!-- Seller Reviews -->
   <div *ngIf="activeReviewTab === 'seller'">
-    <div class="border rounded p-5 mb-6 bg-warning-subtle">
-      <strong class="fs-5">🏪 Người bán: {{ product?.seller_name }}</strong>
-      <p class="mb-0 text-muted mt-1">Đánh giá dịch vụ và thái độ phục vụ của người bán</p>
+    <div class="border rounded p-5 mb-6 bg-warning-subtle d-flex flex-wrap align-items-start justify-content-between gap-3">
+      <div>
+        <strong class="fs-5">🏪 Người bán: {{ product?.seller_name }}</strong>
+        <p class="mb-0 text-muted mt-1">Đánh giá dịch vụ và thái độ phục vụ của người bán</p>
+      </div>
+      <div class="d-flex flex-column align-items-stretch align-items-md-end gap-2">
+        <button type="button" class="btn btn-sm btn-outline-danger"
+          *ngIf="authService.isLoggedIn() && canReportSeller"
+          (click)="openSellerReportModal()">
+          Báo cáo người bán
+        </button>
+        <small class="text-muted" *ngIf="authService.isLoggedIn() && !canReportSeller && product?.seller">
+          Bạn không thể báo cáo chính shop của mình.
+        </small>
+        <a *ngIf="!authService.isLoggedIn()" routerLink="/login" class="small fw-semibold">Đăng nhập để báo cáo</a>
+      </div>
     </div>
 
     <div *ngFor="let review of sellerReviews" class="border rounded p-6 mb-4 bg-white shadow-sm">
@@ -169,6 +182,51 @@
     </div>
     <div class="alert alert-info mt-4" *ngIf="!authService.isLoggedIn()">
       Vui lòng <a routerLink="/login" class="fw-bold">Đăng nhập</a> để đánh giá người bán.
+    </div>
+
+    <!-- Modal: báo cáo người bán → cùng UserReport với admin -->
+    <div *ngIf="reportModalOpen" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
+      style="z-index: 2000; background: rgba(0,0,0,0.45);"
+      (click)="closeSellerReportModal()">
+      <div class="bg-white rounded shadow-lg w-100 p-4 p-md-5"
+        style="max-width: 560px; max-height: 90vh; overflow-y: auto;"
+        (click)="$event.stopPropagation()"
+        role="dialog" aria-modal="true" aria-labelledby="sellerReportTitle">
+        <h5 id="sellerReportTitle" class="fw-bold mb-2">Báo cáo người bán</h5>
+        <p class="text-muted small mb-4">
+          Nội dung được gửi cho quản trị viên xử lý. Người bán:
+          <strong>{{ product?.seller_name }}</strong>
+        </p>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Loại vi phạm</label>
+          <select class="form-select" [(ngModel)]="reportCategory" name="reportCategory">
+            <option *ngFor="let c of reportCategoryOptions" [value]="c.key">{{ c.label }}</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="reportReason" class="form-label fw-semibold">Mô tả chi tiết <span class="text-danger">*</span></label>
+          <textarea id="reportReason" class="form-control" rows="4" [(ngModel)]="reportReason" name="reportReason"
+            placeholder="Mô tả cụ thể (thời gian, mã đơn nếu có…)"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Ảnh minh chứng (tối đa 5, tuỳ chọn)</label>
+          <input type="file" class="form-control" accept="image/*" multiple (change)="onReportImagesSelected($event)">
+          <ul class="list-unstyled small mt-2 mb-0" *ngIf="reportImageFiles.length">
+            <li *ngFor="let f of reportImageFiles; let i = index" class="d-flex justify-content-between align-items-center py-1 border-bottom">
+              <span class="text-truncate me-2">{{ f.name }}</span>
+              <button type="button" class="btn btn-link btn-sm text-danger p-0" (click)="removeReportImageAt(i)">Xóa</button>
+            </li>
+          </ul>
+        </div>
+        <div class="alert alert-danger py-2 small mb-3" *ngIf="reportError">{{ reportError }}</div>
+        <div class="d-flex gap-2 justify-content-end flex-wrap">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeSellerReportModal()" [disabled]="reportSubmitting">Hủy</button>
+          <button type="button" class="btn btn-danger" (click)="submitSellerReport()" [disabled]="reportSubmitting">
+            {{ reportSubmitting ? 'Đang gửi...' : 'Gửi báo cáo' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

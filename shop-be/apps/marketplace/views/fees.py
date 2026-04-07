@@ -8,15 +8,15 @@ import os
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
-from django.db.models import Sum, Count
 from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from ..models import Transaction, AdminReportSnapshot, AdminAuditLog
-from ..serializers import TransactionListSerializer
+from ..models import AdminReportSnapshot, AdminAuditLog
+from ..revenue_utils import fee_statistics_payload, build_tx_day_map, combined_totals, top_transactions_mixed
+from decimal import Decimal
 
 
 @api_view(['POST'])
@@ -48,52 +48,21 @@ def save_fees_report(request):
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def fee_statistics(request):
-    """Lấy tổng hợp số liệu về doanh thu, phí sàn và số lượng giao dịch."""
+    """Lấy tổng hợp số liệu về doanh thu, phí sàn và số lượng giao dịch (Transaction + Order đã thanh toán)."""
     days = int(request.query_params.get('days', 7))
     if days < 1:
         days = 7
     if days > 90:
         days = 90
 
-    today = timezone.localdate()
-    start_date = today - timedelta(days=days - 1)
-
-    # Tính toán tổng doanh thu và phí từ trước đến nay
-    summary = Transaction.objects.aggregate(
-        total_revenue=Sum('amount'),
-        total_platform_fee=Sum('platform_fee'),
-        total_transactions=Count('id'),
-    )
-    # Tính riêng cho khoảng thời gian admin đang xem
-    last_n = Transaction.objects.filter(created_at__date__gte=start_date).aggregate(
-        rev=Sum('amount'),
-        fee=Sum('platform_fee'),
-    )
-    rev_n = float(last_n['rev'] or 0)
-    fee_n = float(last_n['fee'] or 0)
-    cnt = summary['total_transactions'] or 0
-    fee_total = summary['total_platform_fee'] or 0
-    avg_fee = float(fee_total / cnt) if cnt else 0
-
-    data = {
-        'total_revenue': summary['total_revenue'],
-        'total_platform_fee': summary['total_platform_fee'],
-        'total_transactions': summary['total_transactions'],
-        'revenue_last_n_days': rev_n,
-        'platform_fee_last_n_days': fee_n,
-        'avg_fee_per_transaction': avg_fee,
-        'days': days,
-    }
-    return Response(data)
+    return Response(fee_statistics_payload(days))
 
 
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def fee_top_transactions(request):
-    """Show nhanh 5 giao dịch 'khủng' nhất (phí cao nhất)."""
-    qs = Transaction.objects.select_related('listing', 'buyer').order_by('-platform_fee')[:5]
-    serializer = TransactionListSerializer(qs, many=True)
-    return Response(serializer.data)
+    """5 giao dịch phí cao nhất (marketplace Transaction + Order đã thanh toán)."""
+    return Response(top_transactions_mixed(5))
 
 
 @api_view(['GET'])
@@ -113,40 +82,24 @@ def export_fees_report_csv(request):
     today = timezone.localdate()
     start_date = today - timedelta(days=days - 1)
 
-    # Gom số liệu tổng quát
-    summary = Transaction.objects.aggregate(
-        total_revenue=Sum('amount'),
-        total_platform_fee=Sum('platform_fee'),
-        total_transactions=Count('id'),
-    )
-    last_n = Transaction.objects.filter(created_at__gte=since).aggregate(
-        rev=Sum('amount'),
-        fee=Sum('platform_fee'),
-    )
-    rev_n = float(last_n['rev'] or 0)
-    fee_n = float(last_n['fee'] or 0)
-    cnt = summary['total_transactions'] or 0
-    fee_total = summary['total_platform_fee'] or 0
-    avg_fee = float(fee_total / cnt) if cnt else 0
-
-    # Gom số liệu theo từng ngày
-    txs_qs = (
-        Transaction.objects.filter(created_at__date__gte=start_date)
-        .values('created_at')
-        .annotate(revenue=Sum('amount'), fee=Sum('platform_fee'))
-    )
-    labels = [(start_date + timedelta(days=i)).isoformat() for i in range(days)]
-    tx_map = {
-        row['created_at'].date().isoformat(): {
-            'revenue': float(row['revenue'] or 0),
-            'fee': float(row['fee'] or 0),
-        }
-        for row in txs_qs
+    summary_dict = combined_totals()
+    last_dict = combined_totals(since_dt=since)
+    rev_n = float(last_dict['total_revenue'].quantize(Decimal('0.01')))
+    fee_n = float(last_dict['total_platform_fee'].quantize(Decimal('0.01')))
+    cnt = summary_dict['total_transactions']
+    fee_total = summary_dict['total_platform_fee']
+    avg_fee = float((fee_total / Decimal(cnt)).quantize(Decimal('0.01'))) if cnt else 0.0
+    summary = {
+        'total_revenue': summary_dict['total_revenue'],
+        'total_platform_fee': summary_dict['total_platform_fee'],
+        'total_transactions': summary_dict['total_transactions'],
     }
 
-    # Gom list Top 5
-    top_qs = Transaction.objects.select_related('listing', 'buyer').order_by('-platform_fee')[:5]
-    top_serializer = TransactionListSerializer(top_qs, many=True)
+    labels = [(start_date + timedelta(days=i)).isoformat() for i in range(days)]
+    tx_map_full = build_tx_day_map(start_date, include_orders=True)
+    tx_map = {k: {'revenue': v['revenue'], 'fee': v['fee']} for k, v in tx_map_full.items()}
+
+    top_rows = top_transactions_mixed(5)
 
     filename = f"fees-report-{today.isoformat()}"
     
@@ -200,7 +153,7 @@ def export_fees_report_csv(request):
     for cell in ws[ws.max_row]:
         cell.font = header_font
 
-    for row in top_serializer.data:
+    for row in top_rows:
         ws.append([
             row['id'],
             row['listing_title'],

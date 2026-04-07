@@ -2,6 +2,7 @@
 Bảng điều khiển (Dashboard) - Nơi tập hợp mọi số liệu để Admin nắm bắt tình hình hệ thống.
 """
 from datetime import timedelta
+from decimal import Decimal
 import csv
 import io
 import os
@@ -9,7 +10,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 
 from django.contrib.auth.models import User
-from django.db.models import Sum, Count
+from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.http import HttpResponse
 from django.utils import timezone
@@ -17,7 +18,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from ..models import Listing, Transaction, AdminReportSnapshot, UserReport, AdminAuditLog
+from ..models import Listing, AdminReportSnapshot, UserReport, AdminAuditLog
+from ..revenue_utils import combined_totals, build_tx_day_map, transaction_count_since
 
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
@@ -104,10 +106,11 @@ def export_dashboard_report_csv(request):
     # Thu thập một mớ số liệu tổng quan
     total_users = User.objects.count()
     total_listings = Listing.objects.count()
-    total_transactions = Transaction.objects.count()
-    total_revenue = Transaction.objects.aggregate(total=Sum('amount'))['total'] or 0
+    _tot = combined_totals()
+    total_transactions = _tot['total_transactions']
+    total_revenue = _tot['total_revenue']
     listings_last_n_days = Listing.objects.filter(created_at__gte=since).count()
-    transactions_last_n_days = Transaction.objects.filter(created_at__gte=since).count()
+    transactions_last_n_days = transaction_count_since(since)
 
     # Query đống dữ liệu theo ngày để vẽ biểu đồ
     listings_qs = (
@@ -116,22 +119,9 @@ def export_dashboard_report_csv(request):
         .values('d')
         .annotate(c=Count('id'))
     )
-    txs_qs = (
-        Transaction.objects.filter(created_at__date__gte=start_date)
-        .annotate(d=TruncDate('created_at'))
-        .values('d')
-        .annotate(c=Count('id'), revenue=Sum('amount'), fee=Sum('platform_fee'))
-    )
     labels = [(start_date + timedelta(days=i)).isoformat() for i in range(days)]
     listing_map = {row['d'].isoformat(): row['c'] for row in listings_qs}
-    tx_map = {
-        row['d'].isoformat(): {
-            'count': row['c'],
-            'revenue': float(row['revenue'] or 0),
-            'fee': float(row['fee'] or 0),
-        }
-        for row in txs_qs
-    }
+    tx_map = build_tx_day_map(start_date, include_orders=True)
 
     filename = f"dashboard-report-{today.isoformat()}"
     
@@ -158,7 +148,7 @@ def export_dashboard_report_csv(request):
     ws.append(['Tổng người dùng', total_users])
     ws.append(['Tổng bài đăng', total_listings])
     ws.append(['Tổng giao dịch', total_transactions])
-    ws.append(['Tổng doanh thu', float(total_revenue)])
+    ws.append(['Tổng doanh thu', float(total_revenue or 0)])
     ws.append([f'Bài đăng {days} ngày gần nhất', listings_last_n_days])
     ws.append([f'Giao dịch {days} ngày gần nhất', transactions_last_n_days])
 
@@ -220,17 +210,18 @@ def dashboard_summary(request):
 
     total_users = User.objects.count()
     total_listings = Listing.objects.count()
-    total_transactions = Transaction.objects.count()
-    total_revenue = Transaction.objects.aggregate(total=Sum('amount'))['total'] or 0
+    _tot = combined_totals()
+    total_transactions = _tot['total_transactions']
+    total_revenue = _tot['total_revenue']
 
     listings_last_n_days = Listing.objects.filter(created_at__gte=since).count()
-    transactions_last_n_days = Transaction.objects.filter(created_at__gte=since).count()
+    transactions_last_n_days = transaction_count_since(since)
 
     return Response({
         'total_users': total_users,
         'total_listings': total_listings,
         'total_transactions': total_transactions,
-        'total_revenue': total_revenue,
+        'total_revenue': float(total_revenue.quantize(Decimal('0.01'))),
         'listings_last_n_days': listings_last_n_days,
         'transactions_last_n_days': transactions_last_n_days,
         'days': days,
@@ -255,10 +246,11 @@ def dashboard_data(request):
     # Gom data summary
     total_users = User.objects.count()
     total_listings = Listing.objects.count()
-    total_transactions = Transaction.objects.count()
-    total_revenue = Transaction.objects.aggregate(total=Sum('amount'))['total'] or 0
+    _tot = combined_totals()
+    total_transactions = _tot['total_transactions']
+    total_revenue = _tot['total_revenue']
     listings_last_n_days = Listing.objects.filter(created_at__gte=since).count()
-    transactions_last_n_days = Transaction.objects.filter(created_at__gte=since).count()
+    transactions_last_n_days = transaction_count_since(since)
 
     # Gom data biểu đồ
     labels = [(start_date + timedelta(days=i)).isoformat() for i in range(days)]
@@ -268,28 +260,15 @@ def dashboard_data(request):
         .values('d')
         .annotate(c=Count('id'))
     )
-    txs_qs = (
-        Transaction.objects.filter(created_at__date__gte=start_date)
-        .annotate(d=TruncDate('created_at'))
-        .values('d')
-        .annotate(c=Count('id'), revenue=Sum('amount'), fee=Sum('platform_fee'))
-    )
     listing_map = {row['d'].isoformat(): row['c'] for row in listings_qs}
-    tx_map = {
-        row['d'].isoformat(): {
-            'count': row['c'],
-            'revenue': float(row['revenue'] or 0),
-            'fee': float(row['fee'] or 0),
-        }
-        for row in txs_qs
-    }
+    tx_map = build_tx_day_map(start_date, include_orders=True)
 
     return Response({
         'summary': {
             'total_users': total_users,
             'total_listings': total_listings,
             'total_transactions': total_transactions,
-            'total_revenue': total_revenue,
+            'total_revenue': float(total_revenue.quantize(Decimal('0.01'))),
             'listings_last_n_days': listings_last_n_days,
             'transactions_last_n_days': transactions_last_n_days,
             'days': days,
@@ -324,22 +303,9 @@ def dashboard_timeseries(request):
         .values('d')
         .annotate(c=Count('id'))
     )
-    txs = (
-        Transaction.objects.filter(created_at__date__gte=start_date)
-        .annotate(d=TruncDate('created_at'))
-        .values('d')
-        .annotate(c=Count('id'), revenue=Sum('amount'), fee=Sum('platform_fee'))
-    )
 
     listing_map = {row['d'].isoformat(): row['c'] for row in listings}
-    tx_map = {
-        row['d'].isoformat(): {
-            'count': row['c'],
-            'revenue': float(row['revenue'] or 0),
-            'fee': float(row['fee'] or 0),
-        }
-        for row in txs
-    }
+    tx_map = build_tx_day_map(start_date, include_orders=True)
 
     return Response({
         'labels': labels,

@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from ..models import UserReport, AdminAuditLog
+from ..models import UserReport, AdminAuditLog, UserProfile
 from ..serializers import UserReportSerializer
 
 class AdminReportViewSet(viewsets.ReadOnlyModelViewSet):
@@ -53,7 +53,7 @@ class AdminReportViewSet(viewsets.ReadOnlyModelViewSet):
         report.save()
 
         target_user = report.target_user
-        profile = target_user.userprofile
+        profile, _ = UserProfile.objects.get_or_create(user=target_user)
         details = f"Đã xong báo cáo #{report.id} ({resolution_status}). Note: {admin_reply}."
 
         # Nếu tố cáo chuẩn (RESOLVED) thì tự động tặng 1 gậy cảnh báo cho user

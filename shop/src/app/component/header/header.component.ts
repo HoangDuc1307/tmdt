@@ -242,6 +242,11 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/category']);
   }
 
+  goToManageProduct(event: Event) {
+    event.preventDefault();
+    this.router.navigate(['/seller/manage']);
+  }
+
   onSearch() {
     // Thêm log để kiểm tra click
     console.log('HeaderAdmin search click:', this.searchTerm);

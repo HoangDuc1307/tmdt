@@ -4,6 +4,18 @@
   overflow-y: auto;
 } 
 
+/* Tránh bảng co giật khi ít dữ liệu */
+.table-scroll table {
+  min-width: 900px;
+}
+
+/* Dùng cho trạng thái rỗng (nếu template có dùng) */
+.empty-state {
+  padding: 24px;
+  text-align: center;
+  color: #6c757d;
+}
+
 /* Modal styles */
 .modal {
   z-index: 1050;

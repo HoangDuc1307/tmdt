@@ -73,13 +73,8 @@ export class ProductManageComponent implements OnInit {
 
   onCategoryChange() {
     console.log('Category changed to:', this.selectedCategoryId);
-    if (this.selectedCategoryId) {
-      // Load products theo category được chọn
-      this.loadProductsByCategory(this.selectedCategoryId);
-    } else {
-      // Load tất cả products
-      this.loadProducts();
-    }
+    // Không gọi API public theo category nữa; mình chỉ lọc trên danh sách sản phẩm của user
+    this.applyFilters();
   }
 
   onStatusChange() {
@@ -156,19 +151,21 @@ export class ProductManageComponent implements OnInit {
     this.selectedStatus = ''; // Reset status selection
     this.selectedApproved = ''; // Reset approved
     this.selectedDate = ''; // Reset date
-    this.authService.getAllProducts().subscribe({
+    this.authService.getMyProducts().subscribe({
       next: (data: any) => {
-        const productsArray = Array.isArray(data) ? data : [];
-        this.products = productsArray.map((item: any) => ({
+        const productsArray = Array.isArray(data) ? data : (data?.results || []);
+        this.allProducts = productsArray.map((item: any) => ({
           ...item,
           image: item.image ? item.image : 'assets/images/products/giay.jpg'
         }));
+        this.products = [...this.allProducts];
         this.applyFilters();
         console.log('All products loaded:', this.products);
       },
       error: (error: any) => {
         console.error('Error loading products:', error);
         this.products = [];
+        this.allProducts = [];
         this.filteredProducts = [];
       }
     });
@@ -225,11 +222,7 @@ export class ProductManageComponent implements OnInit {
 
   // Method để reload products theo category hiện tại
   reloadProducts() {
-    if (this.selectedCategoryId) {
-      this.loadProductsByCategory(this.selectedCategoryId);
-    } else {
-      this.loadProducts();
-    }
+    this.loadProducts();
     // Áp dụng filter status sau khi reload
     setTimeout(() => {
       this.applyFilters();
@@ -290,24 +283,23 @@ export class ProductManageComponent implements OnInit {
   loadProductsByCategory(categoryId: string): void {
     this.selectedCategoryId = categoryId;
     this.selectedStatus = ''; // Reset status selection
-    
-    this.authService.getProductByCategory(categoryId).subscribe({
+
+    // Lấy sản phẩm của chính user rồi lọc theo category (tránh lộ sản phẩm người khác)
+    this.authService.getMyProducts().subscribe({
       next: (data: any) => {
-        const productsArray = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.results)
-            ? data.results
-            : [];
-        this.products = productsArray.map((item: any) => ({
+        const productsArray = Array.isArray(data) ? data : (data?.results || []);
+        this.allProducts = productsArray.map((item: any) => ({
           ...item,
           image: item.image ? item.image : 'assets/images/products/giay.jpg'
         }));
+        this.products = this.allProducts.filter(p => String(p.category) === String(categoryId));
         this.applyFilters(); 
         console.log('Products loaded by category:', this.products);
       },
       error: (error: any) => {
         console.error('Lỗi khi tải sản phẩm theo category:', error);
         this.products = [];
+        this.allProducts = [];
         this.filteredProducts = [];
       }
     });

@@ -30,12 +30,15 @@
   </ng-template>
 </p>
         <h1 class="mb-4 pb-2 fs-4">{{product.name}}</h1>
-    <div class="d-flex align-items-center fs-15px mb-6">
-		<p class="mb-0 fw-semibold text-body-emphasis" *ngIf="reviews.length > 0">Rating </p>
-	    <div class="d-flex align-items-center fs-12px justify-content-center mb-0 px-6 rating-result">
-            <app-star-rating [rating]="4.8" [readonly]="true"></app-star-rating>
+    <div class="d-flex align-items-center flex-wrap fs-15px mb-6 gap-2">
+		<ng-container *ngIf="reviews.length > 0">
+      <p class="mb-0 fw-semibold text-body-emphasis">Đánh giá</p>
+	    <div class="d-flex align-items-center fs-12px rating-result">
+            <app-star-rating [rating]="averageProductRating" [readonly]="true"></app-star-rating>
+            <span class="text-muted ms-2 small">{{ averageProductRating | number:'1.1-1' }}/5</span>
         </div>
-		<a href="#reviews-section" class="border-start ps-6 text-body">Read {{ reviews.length }} reviews</a>
+		<a href="#reviews-section" class="border-start border-secondary ps-6 text-body">Xem {{ reviews.length }} đánh giá</a>
+    </ng-container>
     </div>
         <p class="fs-15px">{{ product.description }}</p>
         <p class="text-body-emphasis fw-semibold mb-6">Quantity: {{product.quantity}} </p>
@@ -179,15 +182,23 @@
 <div *ngIf="message" class="alert alert-info mt-3">{{ message }}</div>
 <section class="container pt-15 pb-15 pt-lg-17 pb-lg-20" data-animated-id="4">
 	<div class="text-center"><h2 class="mb-12">You may also like</h2></div>
-	<div class="row" *ngIf="pagedRelatedProducts.length > 0; else noRelated">
-		<div class="col-sm-6 col-lg-4 col-xl-3 mb-4" *ngFor="let item of pagedRelatedProducts">
-			<div class="card card-product grid-2 bg-transparent border-0">
+	<div class="row related-products-grid g-4" *ngIf="pagedRelatedProducts.length > 0; else noRelated">
+		<div class="col-sm-6 col-lg-4 col-xl-3 d-flex" *ngFor="let item of pagedRelatedProducts">
+			<div class="card card-product grid-2 bg-transparent border-0 w-100">
 				<figure class="card-img-top position-relative mb-7 overflow-hidden">
-					<a [routerLink]="['/detail', item.id]" class="hover-zoom-in d-block" [title]="item.name">
-						<img [src]="item.image ? item.image : 'assets/images/products/giay.jpg'" class="img-fluid w-100" [alt]="item.name" width="330" height="440">
+					<a
+						class="related-product-thumb-link hover-zoom-in d-block h-100 text-decoration-none"
+						[title]="item.name"
+						[attr.aria-label]="'Xem chi tiết ' + item.name"
+						href="#"
+						tabindex="0"
+						role="link"
+						(click)="goToRelatedDetail(item.id, $event)"
+						(keydown.enter)="goToRelatedDetail(item.id, $event)">
+						<img [src]="item.image ? item.image : 'assets/images/products/giay.jpg'" class="img-fluid w-100 related-product-img" [alt]="item.name" width="330" height="440" (error)="onRelatedImgError($event)">
 					</a>
 				</figure>
-				<div class="card-body text-center p-0">
+				<div class="card-body text-center p-0 w-100">
 					<span class="d-flex align-items-center price text-body-emphasis fw-bold justify-content-center mb-3 fs-6">
 						<ins class="text-decoration-none">{{item.price | currency:'VND':'symbol':'1.0-0'}}</ins>
 					</span>

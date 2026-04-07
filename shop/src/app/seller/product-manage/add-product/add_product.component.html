@@ -1,3 +1,9 @@
+<div class="wrapper dashboard-wrapper">
+	<div class="d-flex flex-wrap flex-xl-nowrap">
+		<app-sidebar></app-sidebar>
+	<div class="page-content">
+	
+<div class="dashboard-page-content" data-animated-id="1">
 <div [ngClass]="authService.isAdmin() ? 'wrapper dashboard-wrapper' : 'container mt-5 pt-5 mb-5'">
 	<div [ngClass]="authService.isAdmin() ? 'd-flex flex-wrap flex-xl-nowrap' : ''">
         <app-sidebar *ngIf="authService.isAdmin()"></app-sidebar>

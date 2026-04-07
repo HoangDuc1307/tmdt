@@ -1,20 +1,57 @@
-/* Khung ảnh sản phẩm thống nhất - cùng tỷ lệ và kích thước */
-.card-product .card-img-top {
+/* Cột lưới: flex để mỗi thẻ full chiều ngang cột, nội dung căn dưới ảnh đúng vị trí */
+.home-products-grid > [class*="col-"] {
+  display: flex;
+}
+
+.home-products-grid .card.card-product {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Khung ảnh vuông thống nhất */
+.home-products-grid .card-product .card-img-top {
   position: relative;
   aspect-ratio: 1 / 1;
   background-color: var(--bs-body-bg, #f5f5f5);
+  flex-shrink: 0;
 }
 
-.card-product .card-img-top a {
+.home-products-grid .card-product .card-img-top > a {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.card-product .card-img-top img {
+.home-products-grid .card-product .card-img-top img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
+}
+
+/* Phần chữ luôn nằm trong cột, căn giữa */
+.home-products-grid .card-product .card-body {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.home-products-grid .product-title {
+  width: 100%;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.home-products-grid .price {
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
 }

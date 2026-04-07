@@ -36,20 +36,11 @@
 														</a>
 													</li>
 													<li *ngIf="authService.isLoggedIn() && !authService.isAdmin()">
-														<a href="#" (click)="goToAddProduct($event)"
+														<a href="#" (click)="goToManageProduct($event)"
 															class="border-hover text-decoration-none py-3 d-block"><span
-																class="border-hover-target">ADD PRODUCT</span></a>
+																class="border-hover-target">MANAGE PRODUCT</span></a>
 													</li>
-													<li *ngIf="authService.isLoggedIn() && !authService.isAdmin()">
-														<a href="#" (click)="goToAddCategory($event)"
-															class="border-hover text-decoration-none py-3 d-block"><span
-																class="border-hover-target">ADD CATEGORY</span></a>
-													</li>
-													<li *ngIf="authService.isLoggedIn() && !authService.isAdmin()">
-														<a href="#" (click)="goToMyProducts($event)"
-															class="border-hover text-decoration-none py-3 d-block"><span
-																class="border-hover-target">MY LISTINGS</span></a>
-													</li>
+													
 													<li *ngIf="!authService.isLoggedIn()">
 														<a href="login"
 															class="border-hover text-decoration-none py-3 d-block"><span

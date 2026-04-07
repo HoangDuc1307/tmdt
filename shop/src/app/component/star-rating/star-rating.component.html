@@ -1,8 +1,17 @@
-<div class="star-rating" [class.readonly]="readonly">
-    <span *ngFor="let star of stars" 
-          class="star" 
-          [class.filled]="star <= rating"
-          (click)="setRating(star)">
-      &#9733;
-    </span>
+<div
+  class="star-rating"
+  [class.readonly]="readonly"
+  (mouseleave)="onStarLeave()"
+  role="img"
+  [attr.aria-label]="readonly ? ('Điểm ' + (clamped | number:'1.0-1') + ' trên 5 sao') : 'Chọn từ 1 đến 5 sao'"
+>
+  <span
+    *ngFor="let star of stars"
+    class="star"
+    [class.filled]="isFilled(star)"
+    (mouseenter)="onStarEnter(star)"
+    (click)="setRating(star)"
+  >
+    &#9733;
+  </span>
 </div>

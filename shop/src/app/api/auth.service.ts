@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -181,10 +181,14 @@ export class AuthService {
     return this.http.delete(`${this.apiUrl}/cart/remove/`, { headers });
   }
 
-  // Đơn hàng
-  getOrders(): Observable<any> {
+  // Đơn hàng (mặc định chỉ đơn đã mua; includePending để lấy cả pending)
+  getOrders(options?: { includePending?: boolean }): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.get(`${this.apiUrl}/orders/`, { headers });
+    let params = new HttpParams();
+    if (options?.includePending) {
+      params = params.set('include_pending', '1');
+    }
+    return this.http.get(`${this.apiUrl}/orders/`, { headers, params });
   }
 
   createOrder(orderData: any = {}): Observable<any> {
@@ -196,6 +200,26 @@ export class AuthService {
   getOrderById(id: string): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.get(`${this.apiUrl}/orders/${id}/`, { headers });
+  }
+
+  /** Đơn hàng có sản phẩm do user hiện tại bán (seller) */
+  getSellerOrders(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${this.apiUrl}/orders/seller/`, { headers });
+  }
+
+  getSellerOrderById(id: string | number): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${this.apiUrl}/orders/seller/${id}/`, { headers });
+  }
+
+  patchSellerOrderStatus(orderId: number, status: 'shipped' | 'delivered'): Observable<any> {
+    const headers = this.getAuthHeaders().set('Content-Type', 'application/json');
+    return this.http.patch(
+      `${this.apiUrl}/orders/seller/${orderId}/status/`,
+      { status },
+      { headers }
+    );
   }
 
   updateOrder(orderId: string, data: any): Observable<any> {

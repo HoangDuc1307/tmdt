@@ -22,14 +22,25 @@ class ProductViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
-        
-        # Only show approved products to normal users
-        if not (user.is_authenticated and user.is_staff):
-            if user.is_authenticated:
-                queryset = queryset.filter(models.Q(is_approved=True) | models.Q(seller=user))
+
+        # Chi tiết sản phẩm (trang mua hàng): ai mua cũng xem được SP đã duyệt; seller xem thêm SP của mình (kể cả chưa duyệt).
+        # List / sửa / xóa: staff xem tất cả; user thường chỉ thấy SP do mình tạo (quản lý shop).
+        if self.action == 'retrieve':
+            if user.is_authenticated and user.is_staff:
+                pass
+            elif user.is_authenticated:
+                queryset = queryset.filter(
+                    models.Q(is_approved=True) | models.Q(seller=user)
+                )
             else:
                 queryset = queryset.filter(is_approved=True)
-                
+        else:
+            if not (user.is_authenticated and user.is_staff):
+                if user.is_authenticated:
+                    queryset = queryset.filter(seller=user)
+                else:
+                    queryset = queryset.none()
+
         category_id = self.request.query_params.get('category')
         if category_id:
             queryset = queryset.filter(category_id=category_id)

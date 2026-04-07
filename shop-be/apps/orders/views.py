@@ -6,7 +6,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from .models import Order, OrderItem
-from .serializers import OrderSerializer, OrderUpdateInfoSerializer
+from .serializers import OrderSerializer, OrderUpdateInfoSerializer, SellerOrderSerializer
 from apps.cart.models import Cart, CartItem
 from core.vnpay_config import VNPAY_CONFIG
 from core.vnpay import generate_vnpay_url
@@ -15,6 +15,9 @@ import hashlib
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .utils import send_payment_email
+
+# Đơn hàng "đã mua" (đã thanh toán hoặc đang/đã giao) — không hiển thị pending ở list/detail buyer
+PURCHASED_ORDER_STATUSES = ('paid', 'shipped', 'delivered')
 
 
 class CheckoutView(APIView):
@@ -28,6 +31,15 @@ class CheckoutView(APIView):
 
         if not cart_items.exists():
             return Response({"error": "Giỏ hàng của bạn đang trống."}, status=400)
+
+        for cart_item in cart_items:
+            if cart_item.product.seller_id == user.id:
+                return Response(
+                    {
+                        "error": "Giỏ hàng có sản phẩm do bạn bán. Vui lòng xóa các sản phẩm đó khỏi giỏ trước khi đặt hàng."
+                    },
+                    status=400,
+                )
 
         # Lấy thông tin từ UserProfile
         try:
@@ -91,6 +103,13 @@ class PayOrderView(APIView):
         if order.status != 'pending':
             return Response({"error": "Đơn hàng đã thanh toán hoặc không hợp lệ"}, status=400)
 
+        for item in order.items.all():
+            if item.product.seller_id == user.id:
+                return Response(
+                    {"error": "Đơn hàng chứa sản phẩm do bạn bán, không thể thanh toán."},
+                    status=400,
+                )
+
         # Kiểm tra tồn kho trước khi trừ
         for item in order.items.all():
             product = item.product
@@ -123,7 +142,12 @@ class OrderListView(ListAPIView):
     serializer_class = OrderSerializer
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        qs = Order.objects.filter(user=self.request.user)
+        # Mặc định chỉ trả đơn đã mua; ?include_pending=1 để lấy cả pending (profile, tiếp tục thanh toán)
+        inc = self.request.query_params.get('include_pending', '').lower()
+        if inc not in ('1', 'true', 'yes'):
+            qs = qs.filter(status__in=PURCHASED_ORDER_STATUSES)
+        return qs.order_by('-created_at')
 
 
 class OrderDetailView(RetrieveAPIView):
@@ -132,8 +156,56 @@ class OrderDetailView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Chỉ cho phép user lấy đơn hàng của chính mình
+        # Mọi trạng thái của chính user (checkout/paid cần đọc đơn pending)
         return Order.objects.filter(user=self.request.user)
+
+
+def _seller_order_base_qs(user):
+    return Order.objects.filter(items__product__seller=user).distinct()
+
+
+class SellerOrderListView(ListAPIView):
+    """Đơn có ít nhất một sản phẩm do user hiện tại bán (chỉ đơn đã thanh toán / giao)."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = SellerOrderSerializer
+
+    def get_queryset(self):
+        return (
+            _seller_order_base_qs(self.request.user)
+            .filter(status__in=PURCHASED_ORDER_STATUSES)
+            .order_by('-created_at')
+        )
+
+
+class SellerOrderDetailView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = SellerOrderSerializer
+
+    def get_queryset(self):
+        return _seller_order_base_qs(self.request.user).filter(
+            status__in=PURCHASED_ORDER_STATUSES
+        )
+
+
+class SellerOrderStatusView(APIView):
+    """Seller cập nhật trạng thái vận chuyển cho đơn có sản phẩm của mình (cả đơn là chung)."""
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        order = get_object_or_404(
+            _seller_order_base_qs(request.user).filter(status__in=PURCHASED_ORDER_STATUSES),
+            pk=pk,
+        )
+        new_status = request.data.get('status')
+        if new_status not in ('shipped', 'delivered'):
+            return Response(
+                {'error': 'Chỉ chấp nhận status: shipped hoặc delivered'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        order.status = new_status
+        order.save()
+        serializer = SellerOrderSerializer(order, context={'request': request})
+        return Response(serializer.data)
 
 
 class UpdateOrderInfoView(APIView):
@@ -155,14 +227,14 @@ class UpdateOrderInfoView(APIView):
 class AllOrdersAdminView(ListAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
     pagination_class = None
 
 
 class AdminOrderDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAdminUser] 
+    permission_classes = [IsAuthenticated] 
 
 
 class VNPayPaymentView(APIView):
@@ -171,6 +243,12 @@ class VNPayPaymentView(APIView):
     def post(self, request, order_id):
         user = request.user
         order = get_object_or_404(Order, id=order_id, user=user, status='pending')
+        for item in order.items.all():
+            if item.product.seller_id == user.id:
+                return Response(
+                    {"error": "Đơn hàng chứa sản phẩm do bạn bán, không thể thanh toán."},
+                    status=400,
+                )
         amount = order.total_price
         payment_url = generate_vnpay_url(order, amount, VNPAY_CONFIG, user)
         return Response({"payment_url": payment_url})

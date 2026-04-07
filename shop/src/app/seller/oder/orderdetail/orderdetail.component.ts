@@ -20,6 +20,10 @@ export class OderDetailComponent  implements OnInit {
     userProfile: any = null;
     message: string = '';
     constructor(private authservice: AuthService, private route: ActivatedRoute) {}
+
+    get isAdmin(): boolean {
+      return this.authservice.isAdmin();
+    }
   
     ngOnInit(): void {
       let orderId = this.route.snapshot.paramMap.get('id');
@@ -27,29 +31,16 @@ export class OderDetailComponent  implements OnInit {
         orderId = localStorage.getItem('lastOrderId');
       }
       if (orderId) {
-        if (this.authservice.isAdmin()) {
-          this.authservice.getOrderByIdAdmin(Number(orderId)).subscribe({
-            next: (order) => {
-              this.order = order;
-              this.orderItems = order.items || [];
-              this.userProfile = order.user_profile || null;
-            },
-            error: () => {
-              this.message = 'Không tìm thấy đơn hàng.';
-            }
-          });
-        } else {
-          this.authservice.getOrderById(orderId).subscribe({
-            next: (order) => {
-              this.order = order;
-              this.orderItems = order.items || [];
-              this.userProfile = order.user_profile || null;
-            },
-            error: () => {
-              this.message = 'Không tìm thấy đơn hàng.';
-            }
-          });
-        }
+        this.authservice.getSellerOrderById(orderId).subscribe({
+          next: (order) => {
+            this.order = order;
+            this.orderItems = order.items || [];
+            this.userProfile = order.user_profile || null;
+          },
+          error: () => {
+            this.message = 'Không tìm thấy đơn hàng hoặc đơn không có sản phẩm của bạn.';
+          }
+        });
       } else {
         this.message = 'Không tìm thấy đơn hàng.';
       }
@@ -58,15 +49,19 @@ export class OderDetailComponent  implements OnInit {
   markAsDelivered() {
     if (!this.order?.id) return;
     if (window.confirm('Bạn có chắc chắn muốn xác nhận đã giao hàng đơn này?')) {
-      this.authservice.markOrderDelivered(this.order.id).subscribe({
-        next: (order) => {
+      const req = this.isAdmin
+        ? this.authservice.markOrderDelivered(this.order.id)
+        : this.authservice.patchSellerOrderStatus(this.order.id, 'delivered');
+      req.subscribe({
+        next: () => {
           this.order.status = 'delivered';
           alert('Đã giao hàng thành công!');
         },
         error: (err) => {
-          alert('Cập nhật trạng thái thất bại: ' + (err.error?.detail || ''));
+          const msg = err.error?.error || err.error?.detail || JSON.stringify(err.error || '');
+          alert('Cập nhật trạng thái thất bại: ' + msg);
         }
       });
     }
   }
-  }
+}

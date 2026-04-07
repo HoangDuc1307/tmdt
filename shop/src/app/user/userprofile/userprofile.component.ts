@@ -3,9 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { RouterModule } from '@angular/router';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../api/auth.service';
-import { Router } from '@angular/router';
 
 
 @Component({
@@ -22,7 +20,7 @@ export class UserProfileComponent implements OnInit {
   message:string ='';
   totalOrder: number = 0;
   totalPrice: number = 0;
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
     this.authService.getProfile().subscribe({
@@ -33,7 +31,7 @@ export class UserProfileComponent implements OnInit {
         this.error = err.error?.detail || 'Không thể lấy thông tin người dùng';
       }
     });
-    this.authService.getOrders().subscribe({
+    this.authService.getOrders({ includePending: true }).subscribe({
       next: (order: any) => {
         // Đảm bảo order luôn là mảng
         const orderArray = Array.isArray(order)
@@ -49,9 +47,5 @@ export class UserProfileComponent implements OnInit {
         this.message ='Không tìm thấy đơn hàng nào'
       }
     });
-  }
-
-  goToUpdateProfile() {
-    this.router.navigate(['/userupdate']);
   }
 }

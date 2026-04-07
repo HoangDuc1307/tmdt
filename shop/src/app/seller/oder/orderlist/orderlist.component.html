@@ -2,14 +2,14 @@
 	<div class="d-flex flex-wrap flex-xl-nowrap">
 		<app-sidebar></app-sidebar>
 	<div class="page-content">
-		<app-headeradmin></app-headeradmin>
+	
 <div class="dashboard-page-content" data-animated-id="1">
 					
 	<div class="row mb-9 align-items-center justify-content-between">
 		
 		<div class="col-sm-6 mb-8 mb-sm-0">
-			<h2 class="fs-4 mb-0">Order List</h2>
-			<p class="mb-0">Lorem ipsum dolor sit amet.</p>
+			<h2 class="fs-4 mb-0">Đơn hàng từ khách</h2>
+			<p class="mb-0">Chỉ đơn đã thanh toán có ít nhất một sản phẩm do bạn bán.</p>
 		</div>
 	</div>
 	
@@ -20,7 +20,8 @@
 					<div class="card-header bg-transparent px-0 pt-0 pb-7">
 						<div class="row align-items-center justify-content-between">
 		<div class="col-md-4 col-12 mr-auto mb-md-0 mb-6">
-			<input type="text" placeholder="Search..." class="form-control bg-input border-0">
+			<input type="text" placeholder="Tìm theo mã đơn, tên, trạng thái..." class="form-control bg-input border-0"
+				[(ngModel)]="searchTerm" (input)="onSearchInput()">
 		</div>
 		<div class="col-md-8">
 			<div class=" row justify-content-end flex-nowrap d-flex">
@@ -28,7 +29,6 @@
 					
 				</div>
 				<div class="col-lg-3 col-md-6 col-6">
-					<a href="order-detail.html" class="btn btn-primary py-4 fs-13px btn-xs me-4">Search</a>
 				</div>
 			</div>
 		</div>
@@ -42,8 +42,7 @@
 							</th>
 							<th class="align-middle" scope="col">Customer Name
 							</th>
-							<th class="align-middle" scope="col">Price
-							</th>
+							<th class="align-middle" scope="col">Doanh thu (shop)</th>
 							<th class="align-middle" scope="col">Status
 							</th>
 							<th class="align-middle" scope="col">Date
@@ -53,15 +52,17 @@
 							
 						</tr>
 					</thead><tbody>
+  <tr *ngIf="error" class="border-0"><td colspan="6" class="text-danger">{{ error }}</td></tr>
+  <tr *ngIf="!error && orders.length === 0" class="border-0"><td colspan="6" class="text-muted">Chưa có đơn nào có sản phẩm của bạn (đã thanh toán).</td></tr>
   <tr *ngFor="let order of orders">
     <td><a href="#">#{{ order.id }}</a></td>
-    <td class="text-body-emphasis">{{ order.user_profile?.first_name || '' }} {{ order.user_profile?.last_name || '' }}</td>
-    <td>{{ order.total_price | currency:'USD':'symbol':'1.2-2' }}</td>
+    <td class="text-body-emphasis">{{ order.receiver_name || ((order.user_profile?.first_name || '') + ' ' + (order.user_profile?.last_name || '')).trim() }}</td>
+    <td>{{ (+order.seller_subtotal || +order.total_price || 0) | currency:'USD':'symbol':'1.2-2' }}</td>
     <td>
       <span class="badge rounded-lg rounded-pill alert py-3 px-4 mb-0 border-0 text-capitalize fs-12"
         [ngClass]="{
           'alert-warning': order.status === 'pending',
-          'alert-success': order.status === 'paid' || order.status === 'received',
+          'alert-success': order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered' || order.status === 'received',
           'alert-danger': order.status === 'cancel'
         }">
         {{ order.status | titlecase }}
@@ -76,9 +77,7 @@
             <i class="far fa-ellipsis-h"></i>
           </a>
           <div class="dropdown-menu dropdown-menu-end m-0">
-            <a class="dropdown-item" [routerLink]="['/paid', order.id]">View detail</a>
-            <a class="dropdown-item" href="#">Edit info</a>
-            <a class="dropdown-item text-danger" href="#" (click)="deleteOrder(order.id)">Delete</a>
+            <a class="dropdown-item" [routerLink]="['/orderdetail', order.id]">Xem chi tiết</a>
           </div>
         </div>
       </div>

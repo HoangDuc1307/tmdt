@@ -13,47 +13,46 @@
   }
 }
 
-/* Sidebar link base */
+/* Sidebar link base — theo theme (light/dark) */
 .sidebar-link {
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease;
   color: var(--bs-body-color);
   background-color: transparent !important;
   border-radius: 8px;
   margin: 0 4px;
 }
 
-/* Hiệu ứng Hover & Focus */
-.sidebar-link:hover, 
+/* Hover & focus — dùng biến Bootstrap, không ép #fff */
+.sidebar-link:hover,
 .sidebar-link:focus {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
+  background-color: var(--bs-tertiary-bg) !important;
+  color: var(--bs-emphasis-color) !important;
   outline: none;
 }
 
-/* Style cho mục đang chọn (Active) */
+/* Mục active */
 .sidebar-link.active {
-  color: #3b82f6 !important;
-  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: var(--bs-primary) !important;
+  background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
 }
 
 .sidebar-link.active .sidebar-item-icon,
 .sidebar-link.active .sidebar-item-text {
-  color: #3b82f6 !important;
+  color: var(--bs-primary) !important;
 }
 
-/* Màu icon/chữ mặc định */
+/* Icon / chữ mặc định — theo theme */
 .sidebar-item-icon {
-  color: rgba(255, 255, 255, 0.6) !important;
+  color: var(--bs-secondary-color) !important;
 }
 
 .sidebar-item-text {
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: var(--bs-body-color) !important;
 }
 
-/* Hover icon & chữ */
 .sidebar-link:hover .sidebar-item-icon,
 .sidebar-link:hover .sidebar-item-text {
-  color: #fff !important;
+  color: var(--bs-emphasis-color) !important;
 }
 
 /* Reset background cho list item */

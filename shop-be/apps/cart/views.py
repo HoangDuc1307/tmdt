@@ -36,6 +36,12 @@ class AddToCartView(APIView):
 
         product = get_object_or_404(Product, id=product_id)
 
+        if product.seller_id and product.seller_id == request.user.id:
+            return Response(
+                {"error": "Bạn không thể mua sản phẩm do chính mình bán."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if quantity > product.quantity:
             return Response({"error": f"Số lượng vượt quá tồn kho ({product.quantity})"}, status=status.HTTP_400_BAD_REQUEST)
 

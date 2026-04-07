@@ -54,7 +54,8 @@
                             <h6 class="mb-4">Order info</h6>
                             <p class="mb-4">
                                 Status: {{ order.status }} <br>
-                                Total: {{ order.total_price | currency:'USD':'symbol':'1.2-2' }}
+                                Tổng đơn: {{ order.total_price | currency:'USD':'symbol':'1.2-2' }} <br>
+                                Phần shop: {{ (+order.seller_subtotal || 0) | currency:'USD':'symbol':'1.2-2' }}
                             </p>
                         </div>
                     </div>
@@ -102,7 +103,7 @@
                                         </td>
                                         <td>{{ item.product_price | currency:'USD':'symbol':'1.2-2' }}</td>
                                         <td>{{ item.quantity }}</td>
-                                        <td class="text-end">{{ (item.product_price * item.quantity) | currency:'USD':'symbol':'1.2-2' }}</td>
+                                        <td class="text-end">{{ ((+item.price || +item.product_price) * item.quantity) | currency:'USD':'symbol':'1.2-2' }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -110,21 +111,25 @@
                         <div class="d-flex flex-column align-items-end justify-content-end mt-3">
                             <div class="mw-40 w-40">
                                 <div class="d-flex w-100">
-                                    <span class="d-inline-block w-50">Subtotal:</span>
-                                    <span class="d-inline-block w-50 text-end fw-normal">{{ order.total_price | currency:'USD':'symbol':'1.2-2' }}</span>
+                                    <span class="d-inline-block w-50">Tổng (phần shop):</span>
+                                    <span class="d-inline-block w-50 text-end fw-normal">{{ (+order.seller_subtotal || +order.total_price || 0) | currency:'USD':'symbol':'1.2-2' }}</span>
                                 </div>
                                 <div class="d-flex w-100">
                                     <span class="d-inline-block w-50">Shipping cost:</span>
                                     <span class="d-inline-block w-50 text-end fw-normal">$0</span>
                                 </div>
                                 <div class="d-flex w-100 mb-5">
-                                    <span class="d-inline-block w-50">Grand total:</span>
-                                    <span class="d-inline-block w-50 text-end fs-5 fw-semibold">{{ order.total_price | currency:'USD':'symbol':'1.2-2' }}</span>
+                                    <span class="d-inline-block w-50">Grand total (phần shop):</span>
+                                    <span class="d-inline-block w-50 text-end fs-5 fw-semibold">{{ (+order.seller_subtotal || +order.total_price || 0) | currency:'USD':'symbol':'1.2-2' }}</span>
                                 </div>
                                 <div class="d-flex w-100">
                                     <span class="d-inline-block w-50 text-muted">Status:</span>
                                     <span class="d-inline-block w-50 text-end fs-20 fw-semibold">
-                                        <span class="badge rounded-pill alert alert-success text-success fs-12px px-4 py-3">Payment done</span>
+                                        <span class="badge rounded-pill alert fs-12px px-4 py-3 text-capitalize"
+                                          [ngClass]="{
+                                            'alert-success': order.status === 'paid' || order.status === 'shipped' || order.status === 'delivered',
+                                            'alert-warning': order.status === 'pending'
+                                          }">{{ order.status }}</span>
                                     </span>
                                 </div>
                             </div>
@@ -147,8 +152,8 @@
                             </p>
                         </div>
                     </div>
-                    <div class="h-25 pt-8">
-                        <button class="btn btn-primary" (click)="markAsDelivered()">Delivered</button>
+                    <div class="h-25 pt-8" *ngIf="order">
+                        <button type="button" class="btn btn-primary" (click)="markAsDelivered()">Đánh dấu đã giao</button>
                     </div>
                 </div>
             </div>

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../api/auth.service';
 import { ReviewService } from '../api/review.service';
 import { StarRatingComponent } from '../component/star-rating/star-rating.component';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-product',
@@ -40,9 +40,24 @@ export class ProductComponent implements OnInit {
   // Tab control
   activeReviewTab: string = 'product';
 
+  /** Trung bình sao đánh giá sản phẩm (clamp 0–5) */
+  get averageProductRating(): number {
+    if (!this.reviews?.length) return 0;
+    const sum = this.reviews.reduce((s, r) => s + (Number(r.rating) || 0), 0);
+    return Math.max(0, Math.min(5, sum / this.reviews.length));
+  }
+
+  /** Trung bình sao đánh giá người bán */
+  get averageSellerRating(): number {
+    if (!this.sellerReviews?.length) return 0;
+    const sum = this.sellerReviews.reduce((s, r) => s + (Number(r.rating) || 0), 0);
+    return Math.max(0, Math.min(5, sum / this.sellerReviews.length));
+  }
+
   constructor(
-    public authService: AuthService, 
+    public authService: AuthService,
     private route: ActivatedRoute,
+    private router: Router,
     private reviewService: ReviewService
   ) {}
 
@@ -204,5 +219,21 @@ export class ProductComponent implements OnInit {
     if (this.quantity > 1) {
       this.quantity--;
     }
+  }
+
+  onRelatedImgError(event: Event): void {
+    const el = event.target as HTMLImageElement;
+    if (el) {
+      el.src = 'assets/images/products/giay.jpg';
+    }
+  }
+
+  /** Mở chi tiết sản phẩm từ block "You may also like" (ảnh / vùng ảnh) */
+  goToRelatedDetail(id: string | number | null | undefined, event?: Event): void {
+    event?.preventDefault();
+    if (id == null || id === '') {
+      return;
+    }
+    this.router.navigate(['/detail', String(id)]);
   }
 }

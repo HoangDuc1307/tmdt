@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AdminService } from '../../services/admin.service';
+import { AuthService } from '../../api/auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -13,6 +14,7 @@ import { CommonModule } from '@angular/common';
 export class HeaderAdminComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly adminService = inject(AdminService);
+  private readonly authService = inject(AuthService);
 
   // Unread notification badge count
   unreadCount = signal(0);
@@ -59,7 +61,16 @@ export class HeaderAdminComponent implements OnInit {
   }
 
   logout() {
-    // Logout to login page
-    this.router.navigate(['/login']);
+    // Xóa ngay dữ liệu cục bộ
+    this.authService.clearLocalStorage();
+    
+    // Gọi API logout chạy ngầm
+    this.authService.logout().subscribe({
+      next: () => console.log('Admin logout success'),
+      error: () => console.error('Admin logout error')
+    });
+
+    // Reset hoàn toàn và quay về trang chủ
+    window.location.href = '/';
   }
 }

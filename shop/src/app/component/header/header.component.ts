@@ -180,20 +180,17 @@ export class HeaderComponent implements OnInit {
   }
 
   logout() {
+    // Xóa ngay dữ liệu cục bộ để giao diện cập nhật lập tức
+    this.authService.clearLocalStorage();
+    
+    // Gọi API logout để blacklist refresh token ở backend (chạy ngầm)
     this.authService.logout().subscribe({
-      next: (res: any) => {
-        console.log('Đăng xuất thành công:', res.message);
-        // Xóa local storage và chuyển hướng về trang chủ
-        this.authService.clearLocalStorage();
-        this.router.navigate(['/']);
-      },
-      error: (err: any) => {
-        console.error('Lỗi đăng xuất:', err);
-        // Vẫn xóa local storage và chuyển hướng ngay cả khi có lỗi
-        this.authService.clearLocalStorage();
-        this.router.navigate(['/']);
-      }
+      next: () => console.log('Backend logout success'),
+      error: () => console.error('Backend logout error')
     });
+
+    // Chuyển hướng và tải lại trang để reset hoàn toàn State ứng dụng
+    window.location.href = '/';
   }
 
   goToCart() {

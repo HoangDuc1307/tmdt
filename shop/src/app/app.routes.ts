@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './guards/admin.guard';
 import { HomeComponent } from './page/home.component';
 import { LoginComponent } from './page/login/login.component';
 import { RegisterComponent } from './page/register/register.component';
@@ -10,6 +11,14 @@ import { UserUpdateComponent } from './user/updateuser/userupdate.component';
 import { PaidComponent } from './oder/paid/paid.component';
 import { ChatbotComponent } from './chatbot/chatbot.component';
 import { MyProductsComponent } from './user/my-products/my-products.component';
+
+// Import Admin Components
+import { DashboardComponent } from './admin/dashboard/dashboard.component';
+import { ListingsApprovalComponent } from './admin/listings-approval/listings-approval.component';
+import { UsersManagementComponent } from './admin/users-management/users-management.component';
+import { ReportsManagementComponent } from './admin/reports-management/reports-management.component';
+import { FeesStatisticsComponent } from './admin/fees-statistics/fees-statistics.component';
+import { UserDetailComponent } from './admin/users-management/user-details/user-details.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -25,12 +34,12 @@ export const routes: Routes = [
   { path: 'chatbot', component: ChatbotComponent },
   { path: 'my-products', component: MyProductsComponent },
   
-  // User's admin pages
+  // Admin routes (Flat format)
   { path: 'admin', redirectTo: 'admin/dashboard', pathMatch: 'full' },
-  { path: 'admin/dashboard', loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
-  { path: 'admin/listings', loadComponent: () => import('./pages/listings-approval/listings-approval.component').then(m => m.ListingsApprovalComponent) },
-  { path: 'admin/users', loadComponent: () => import('./pages/users-management/users-management.component').then(m => m.UsersManagementComponent) },
-  { path: 'admin/reports', loadComponent: () => import('./pages/reports-management/reports-management.component').then(m => m.ReportsManagementComponent) },
-  { path: 'admin/fees', loadComponent: () => import('./pages/fees-statistics/fees-statistics.component').then(m => m.FeesStatisticsComponent) },
-  { path: 'admin/users/:id', loadComponent: () => import('./pages/users-management/user-details/user-details.component').then(m => m.UserDetailComponent) },
+  { path: 'admin/dashboard', component: DashboardComponent, canActivate: [adminGuard] },
+  { path: 'admin/listings', component: ListingsApprovalComponent, canActivate: [adminGuard] },
+  { path: 'admin/users', component: UsersManagementComponent, canActivate: [adminGuard] },
+  { path: 'admin/reports', component: ReportsManagementComponent, canActivate: [adminGuard] },
+  { path: 'admin/fees', component: FeesStatisticsComponent, canActivate: [adminGuard] },
+  { path: 'admin/users/:id', component: UserDetailComponent, canActivate: [adminGuard] },
 ];

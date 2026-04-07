@@ -1,12 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private apiUrl = 'http://127.0.0.1:8000/api/v1'; // URL backend mới
+  private currentUserSubject = new BehaviorSubject<any>(this.getUserInfoInitial());
+  public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {}
+
+  private getUserInfoInitial(): any {
+    const userInfo = localStorage.getItem('userInfo');
+    if (!userInfo || userInfo === 'undefined') return null;
+    try { return JSON.parse(userInfo); } catch { return null; }
+  }
 
   // Đăng ký tài khoản
   register(data: { username: string; password: string; email: string; first_name?: string; last_name?: string }): Observable<any> {
@@ -223,6 +231,7 @@ export class AuthService {
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('refresh_token', refreshToken);
     localStorage.setItem('userInfo', JSON.stringify(userInfo));
+    this.currentUserSubject.next(userInfo);
   }
 
   // Xóa tất cả dữ liệu từ localStorage
@@ -230,6 +239,7 @@ export class AuthService {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('userInfo');
+    this.currentUserSubject.next(null);
   }
 
   // Lấy access token từ localStorage

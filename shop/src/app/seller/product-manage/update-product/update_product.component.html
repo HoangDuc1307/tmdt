@@ -1,0 +1,90 @@
+<div class="wrapper dashboard-wrapper">
+	<div class="d-flex flex-wrap flex-xl-nowrap">
+        <app-sidebar></app-sidebar>
+<div class="dashboard-page-content">
+					
+    <div class="row mb-9 align-items-center">
+        <div class="col-xxl-9">
+            <div class="row">
+                <div class="col-sm-6 mb-8 mb-sm-0">
+                    <h2 class="fs-4 mb-0">Add New Product</h2>
+                </div>
+                <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end">
+        <button (click)="onSubmit()" class="btn btn-primary">
+            Update
+        </button>
+        
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-xxl-9">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card mb-8 rounded-4">
+                        <div class="card-header p-7 bg-transparent">
+                            <h4 class="fs-18 mb-0 font-weight-500">Basic</h4>
+                        </div>
+                        <div class="card-body p-7">
+                            <form class="form-border-1" (ngSubmit)="onSubmit()">
+                                <div class="mb-8">
+                                    <label for="product_title" class="mb-4 fs-13px ls-1 fw-bold text-uppercase">Product name</label>
+                                    <input type="text" placeholder="product.name" class="form-control" id="product_title" [(ngModel)]="product.name" name="name">
+                                </div>
+                                <div class="mb-8">
+                                    <label class="mb-4 fs-13px ls-1 fw-bold text-uppercase">description</label>
+                                    <textarea placeholder="product.description" class="form-control" rows="4" [(ngModel)]="product.description" name="description"></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-4">
+                                        <div class="mb-8">
+                                            <label class="mb-4 fs-13px ls-1 fw-bold text-uppercase" for="regular-price">price</label>
+                                            <input placeholder="product.price" type="text" class="form-control" id="regular-price" [(ngModel)]="product.price" name="price">
+                                        </div>
+                                    </div>
+                                    
+                                  
+                                </div>
+                                <div class="mb-8">
+                                    <label class="mb-4 fs-13px ls-1 fw-bold text-uppercase" for="quantity">Quantity</label>
+                                    <input type="text" placeholder="product.quantity" class="form-control" id="quantity" [(ngModel)]="product.quantity" name="quantity">
+                                </div>
+                                <div class="mb-8">
+                                    <label class="mb-4 fs-13px ls-1 fw-bold text-uppercase" for="image">Image</label>
+                                    <input type="text" placeholder="product.image" class="form-control" id="image" [(ngModel)]="product.image" name="image">
+                                </div>
+                                <div *ngIf="message" class="alert alert-success">{{ message }}</div>
+                                <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                </div>
+                <div class="col-lg-4">
+                    <div  class="card mb-8 rounded-4">
+                        <div class="card-header p-7 bg-transparent">
+                            <h4 class="fs-18px mb-0 font-weight-500">Media</h4>
+                        </div>
+                        <div class="card-body p-7">
+                            <div class="input-upload">
+                                <div class="mb-7">
+                                    <img [src]="product.image" width="102" class="d-block mx-auto" alt="">
+                                </div>
+                                <input class="form-control" type="file">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+                    </div>
+                    </div>
+                    </div>

@@ -180,17 +180,20 @@ export class HeaderComponent implements OnInit {
   }
 
   logout() {
-    // Xóa ngay dữ liệu cục bộ để giao diện cập nhật lập tức
-    this.authService.clearLocalStorage();
-    
-    // Gọi API logout để blacklist refresh token ở backend (chạy ngầm)
     this.authService.logout().subscribe({
-      next: () => console.log('Backend logout success'),
-      error: () => console.error('Backend logout error')
+      next: (res: any) => {
+        console.log('Đăng xuất thành công:', res.message);
+        // Xóa local storage và chuyển hướng về trang chủ
+        this.authService.clearLocalStorage();
+        this.router.navigate(['/']);
+      },
+      error: (err: any) => {
+        console.error('Lỗi đăng xuất:', err);
+        // Vẫn xóa local storage và chuyển hướng ngay cả khi có lỗi
+        this.authService.clearLocalStorage();
+        this.router.navigate(['/']);
+      }
     });
-
-    // Chuyển hướng và tải lại trang để reset hoàn toàn State ứng dụng
-    window.location.href = '/';
   }
 
   goToCart() {
@@ -211,8 +214,17 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  goToAdminManage() {
-    this.router.navigate(['/admin']);
+  goToAdminManage(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    // Admin hệ thống vào shell admin mới (không dùng trang seller nữa)
+    this.router.navigate(['/admin/dashboard']);
+  }
+
+  goToSuperAdminManage(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.router.navigate(['/admin/dashboard']);
   }
 
   goToAddProduct(event: Event) {
@@ -271,7 +283,9 @@ export class HeaderComponent implements OnInit {
           }
 
           // Điều hướng dựa trên quyền admin
-          if (res.user && res.user.is_staff === true) {
+          if (res.user && res.user.is_superuser === true) {
+            this.router.navigate(['/admin']);
+          } else if (res.user && res.user.is_staff === true) {
             this.router.navigate(['/admin']);
           } else {
             this.router.navigate(['/']);

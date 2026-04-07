@@ -1,0 +1,60 @@
+<div class="wrapper dashboard-wrapper">
+    <div class="d-flex flex-wrap flex-xl-nowrap">
+        <app-sidebar></app-sidebar>
+        <div class ="page-content">
+            <app-headeradmin></app-headeradmin>
+            <div class="dashboard-page-content" data-animated-id="1">
+					
+                <div class="row mb-9 align-items-center justify-content-between">
+                    
+                    <div class="col-sm-6 mb-8 mb-sm-0">
+                        <h2 class="fs-4 mb-0">Sellers cards</h2>
+                    </div>
+                    <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end">
+                        
+                   
+                    
+                    </div>
+                </div>
+                
+                
+                <div class="card mb-4 rounded-4 p-7">
+                   
+                    <div class="card-body py-7 px-0">
+                        <div class="row">
+                            <div class="col-sm-6 col-lg-3 mb-9" *ngFor="let user of profile; let i = index">
+                                <div class="card card-user rounded-4">
+                                    <div class="card-header text-center">
+                                        <img class="img-avatar loaded" [src]="user.image || '../assets/images/dashboard/avatar-1.png'" alt="{{user.full_name || user.username}}" width="112" height="112" loading="lazy">
+                                    </div>
+                                    <div class="card-body text-center p-7">
+                                        <h5 class="card-title mt-12 fs-6 mb-6">{{user.full_name || user.username}}</h5>
+                                        <div class="card-text text-muted">
+                                            <p class="m-0">User ID: {{ user.user_id || user.id || (user.email ? user.email : (i + 1)) }}</p>
+                                            <p class="mb-0">{{user.email}}</p>
+                                            <p class="mb-0">Username:{{ user.first_name || '' }} {{ user.last_name || 'User' }} </p>
+                                        </div>
+                                        <a href="#" class="btn btn-sm btn-primary fs-14px mt-6">View details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <nav aria-label="Page navigation example" class="mt-6 mb-4">
+                    <ul class="pagination justify-content-start">
+                        <li class="page-item active mx-3"><a class="page-link" href="#">01</a></li>
+                        <li class="page-item mx-3"><a class="page-link" href="#">02</a></li>
+                        <li class="page-item mx-3"><a class="page-link" href="#">03</a></li>
+                        <li class="page-item mx-3"><a class="page-link dot" href="#">...</a></li>
+                        <li class="page-item mx-3"><a class="page-link" href="#">16</a></li>
+                        <li class="page-item mx-3">
+                            <a class="page-link" href="#"><i class="far fa-chevron-right"></i></a>
+                        </li>
+                    </ul>
+                </nav>
+                                </div>
+        </div>
+    </div>
+</div>

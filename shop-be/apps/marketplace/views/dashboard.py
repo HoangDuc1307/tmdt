@@ -40,7 +40,7 @@ def admin_notifications(request):
             'message': f'Có {pending_listings_count} bài đăng đang chờ bạn phê duyệt.',
             'time': 'Vừa xong',
             'type': 'LISTING',
-            'link': '/admin/listings'
+            'link': '/pages/listings'
         })
         
     if open_reports_count > 0:
@@ -49,7 +49,7 @@ def admin_notifications(request):
             'message': f'Có {open_reports_count} báo cáo cần xem xét ngay.',
             'time': 'Vừa xong',
             'type': 'REPORT',
-            'link': '/admin/reports'
+            'link': '/pages/reports'
         })
 
     return Response({

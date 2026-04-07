@@ -1,0 +1,259 @@
+
+<div class="wrapper dashboard-wrapper">
+		<div class="d-flex flex-wrap flex-xl-nowrap">
+			<app-sidebar></app-sidebar>
+			<div class="page-content">
+				<app-headeradmin></app-headeradmin>
+				<main id="content" class="bg-body-tertiary-01 d-flex flex-column main-content">
+					<div class="dashboard-page-content">
+
+						<!-- Thông báo thành công -->
+						<div *ngIf="showSuccessMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+							<strong>Thành công!</strong> Sản phẩm đã được xóa thành công.
+							<button type="button" class="btn-close" (click)="showSuccessMessage = false"></button>
+						</div>
+
+						<div class="row mb-9 align-items-center justify-content-between">
+
+							<div class="col-md-6 mb-8 mb-md-0">
+								<h2 class="fs-4 mb-0">Product List</h2>
+								
+							</div>
+							<div class="col-md-6 d-flex flex-wrap justify-content-md-end">
+								<button type="button" class="btn btn-secondary me-2" (click)="resetFilters()">
+									Reset Filters
+								</button>
+								<button type="button" class="btn btn-danger me-2" (click)="onDeleteAllProducts()">
+									Delete All
+								</button>
+								<a href="/add_product" class="btn btn-primary">
+									Create new
+								</a>
+
+							</div>
+						</div>
+
+
+						<div class="card mb-4 rounded-4 p-7">
+							<div class="card-header bg-transparent px-0 pt-0 pb-7">
+		<div class="row align-items-center justify-content-between">
+	<div class="col-md-4 col-12 mr-auto mb-md-0 mb-6 d-flex gap-2">
+		<input type="text" class="form-control" placeholder="Search name..." [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()">
+		<select class="form-select" [(ngModel)]="selectedCategoryId" (change)="onCategoryChange()">
+			<option value="">All Categories</option>
+			<option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+		</select>
+	</div>
+	<div class="col-md-8">
+		<div class="row justify-content-end d-flex">
+			<div class="col-lg-3 col-md-6 col-6">
+				<select class="form-select" [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+					<option value="">All Status</option>
+					<option value="new">New</option>
+					<option value="sale">Sale</option>
+					<option value="out_of_stock">Out of Stock</option>
+					<option value="regular">Regular</option>
+				</select>
+			</div>
+			<div class="col-lg-3 col-md-6 col-6">
+				<input type="date" class="form-control bg-input border-0" [(ngModel)]="selectedDate" (change)="onDateChange()">
+			</div>
+			<div class="col-lg-3 col-md-6 col-6">
+				<select class="form-select" [(ngModel)]="selectedApproved" (change)="onApprovedChange()">
+					<option value="">All Approval Status</option>
+					<option value="true">Approved</option>
+					<option value="false">Pending Approval</option>
+				</select>
+			</div>
+			
+		</div>
+	</div>
+</div>
+	</div>
+							<div class="card-body px-0 pt-7 pb-0">
+								<div class="table-responsive table-scroll">
+									<table class="table table-hover align-middle table-nowrap mb-0">
+										<tbody>
+											<tr *ngFor="let product of filteredProducts">
+
+												<td class="text-center">
+													
+												</td>
+												<td>
+													<div class="d-flex align-items-center flex-nowrap">
+														<a href="#"
+															title="Flowers cotton dress">
+															<img [src]="product.image"
+																[alt]="product.name" class="lazy-image" width="60"
+																height="80">
+														</a>
+														<a href="#"
+															title="Flowers cotton dress" class="ms-6">
+															<p class="fw-semibold text-body-emphasis mb-1">{{product.name}}</p>
+                                                            <p class="text-muted fs-12px mb-0" *ngIf="product.seller_name">
+                                                                Seller: <span class="text-primary">{{ '@' }}{{product.seller_name}}</span>
+                                                            </p>
+														</a>
+													</div>
+												</td>
+<td>
+  <del class="text-body fw-500 me-4 fs-13px" *ngIf="product.status === 'Sale' || product.status === 'sale' || product.status === 'SALE'">{{product.price | currency:'VND':'symbol':'1.0-0'}}</del>
+  {{ product.current_price ? (product.current_price | currency:'VND':'symbol':'1.0-0') : (product.price | currency:'VND':'symbol':'1.0-0') }}
+</td>
+												<td>{{product.quantity}}</td>
+												<td>
+												<span class="badge rounded-lg rounded-pill alert py-3 px-4 mb-0 border-0 text-capitalize fs-12" 
+      [ngClass]="{
+        'alert-warning': product.status === 'Sale' || product.status === 'sale' || product.status === 'SALE',
+        'alert-danger': product.status === 'Out of stock' || product.status === 'out of stock' || product.status === 'Out_of_stock' || product.status === 'out_of_stock',
+        'alert-success': product.status !== 'Sale' && product.status !== 'sale' && product.status !== 'SALE' && product.status !== 'Out of stock' && product.status !== 'out of stock' && product.status !== 'Out_of_stock' && product.status !== 'out_of_stock'
+      }"
+      [style.background-color]="product.status === 'out_of_stock' ? '#dc3545' : ''"
+      [style.color]="product.status === 'out_of_stock' ? 'white' : ''">
+    {{ product.status === 'out_of_stock' ? 'Out of stock' : product.status }}
+  </span>
+												</td>
+												<td>{{product.created_at | date:"dd/MM/yyyy"}}</td>
+												<td class="text-center">
+													<div class="d-flex flex-nowrap justify-content-center">
+														<button *ngIf="!product.is_approved" type="button"
+															(click)="onApproveProduct(product.id)"
+															class="btn btn-success py-4 px-5 btn-xs fs-13px me-4"><i
+																class="far fa-check me-2"></i> Approve</button>
+														<a [routerLink]="['/update_product',product.id]"
+															class="btn btn-primary py-4 px-5 btn-xs fs-13px me-4"><i
+																class="far fa-pen me-2"></i> Edit</a>
+														<button type="button"
+															(click)="onSaleProduct(product)"
+															class="btn btn-warning py-4 px-5 btn-xs fs-13px me-4"><i
+																class="far fa-tag me-2"></i> Sale</button>
+																<button type="button"
+															(click)="onDeleteProduct(product.id)"
+															class="btn btn-outline-primary btn-hover-bg-danger btn-hover-border-danger btn-hover-text-light py-4 px-5 fs-13px btn-xs me-4">
+															<i class="far fa-trash me-2"></i> Delete
+														</button>
+													</div>
+												</td>
+											</tr>
+											
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+
+						<nav aria-label="Page navigation example" class="mt-6 mb-4">
+							
+						</nav>
+					</div>
+				</main>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal xác nhận xóa -->
+	<div *ngIf="showDeleteModal" class="modal fade show" style="display: block;" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Xác nhận xóa sản phẩm</h5>
+					<button type="button" class="btn-close" (click)="cancelDelete()"></button>
+				</div>
+				<div class="modal-body">
+					<p>Bạn có chắc chắn muốn xóa sản phẩm <strong>"{{productToDelete?.name}}"</strong> không?</p>
+					<p class="text-muted">Hành động này không thể hoàn tác.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="cancelDelete()">Hủy</button>
+					<button type="button" class="btn btn-danger" (click)="confirmDelete()">Xóa sản phẩm</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Backdrop cho modal -->
+	<div *ngIf="showDeleteModal" class="modal-backdrop fade show"></div>
+
+	<!-- Modal xác nhận xóa tất cả -->
+	<div *ngIf="showDeleteAllModal" class="modal fade show" style="display: block;" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Xác nhận xóa tất cả</h5>
+					<button type="button" class="btn-close" (click)="cancelDeleteAll()"></button>
+				</div>
+				<div class="modal-body">
+					<p>Bạn có chắc chắn muốn xóa <strong>tất cả sản phẩm đang hiển thị ({{filteredProducts.length}} sản phẩm)</strong> không?</p>
+					<p class="text-muted">Hành động này không thể hoàn tác và sẽ xóa trực tiếp trên database.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="cancelDeleteAll()">Hủy</button>
+					<button type="button" class="btn btn-danger" (click)="confirmDeleteAll()">Xóa tất cả</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Backdrop cho modal delete all -->
+	<div *ngIf="showDeleteAllModal" class="modal-backdrop fade show"></div>
+
+	<!-- Modal Sale Form -->
+	<div *ngIf="showSaleModal" class="modal fade show" style="display: block;" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Quản lý Sale cho sản phẩm</h5>
+					<button type="button" class="btn-close" (click)="cancelSale()"></button>
+				</div>
+				<div class="modal-body">
+					<div *ngIf="saleMessage" class="alert alert-info">{{ saleMessage }}</div>
+					<div *ngIf="saleError" class="alert alert-danger">{{ saleError }}</div>
+					
+					<!-- Debug info -->
+					<div *ngIf="productToSale" class="alert alert-secondary">
+						<small>Product ID: {{productToSale.id}} | Name: {{productToSale.name}}</small>
+					</div>
+					
+					<form (ngSubmit)="submitSaleForm()">
+						<div class="mb-3">
+							<label class="form-label">Sản phẩm</label>
+							<input type="text" class="form-control" [value]="productToSale?.name" readonly>
+						</div>
+						
+						<div class="mb-3">
+							<label class="form-label">Phần trăm giảm giá (%) *</label>
+							<input type="number" class="form-control" 
+								   [(ngModel)]="saleForm.discount_percent" 
+								   name="discount_percent" 
+								   min="1" max="100" required>
+							<div class="form-text">Nhập số từ 1-100</div>
+						</div>
+						
+						<div class="mb-3">
+							<label class="form-label">Ngày bắt đầu *</label>
+							<input type="datetime-local" class="form-control" 
+								   [(ngModel)]="saleForm.start_date" 
+								   name="start_date" required>
+							<div class="form-text">Mặc định là thời gian hiện tại</div>
+						</div>
+						
+						<div class="mb-3">
+							<label class="form-label">Ngày kết thúc *</label>
+							<input type="datetime-local" class="form-control" 
+								   [(ngModel)]="saleForm.end_date" 
+								   name="end_date" required>
+							<div class="form-text">Chọn ngày kết thúc sale</div>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" (click)="cancelSale()">Hủy</button>
+					<button type="button" class="btn btn-danger" (click)="endSale()">Kết thúc Sale</button>
+					<button type="button" class="btn btn-warning" (click)="submitSaleForm()">Cập nhật Sale</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Backdrop cho modal sale -->
+	<div *ngIf="showSaleModal" class="modal-backdrop fade show"></div>

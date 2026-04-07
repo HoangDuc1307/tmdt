@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from ..models import Listing, AdminAuditLog
 from ..serializers import ListingSerializer
+from apps.products.models import Product
 
 # Xử lý duyệt tin của admin
 class AdminListingViewSet(viewsets.ReadOnlyModelViewSet):
@@ -29,6 +30,14 @@ class AdminListingViewSet(viewsets.ReadOnlyModelViewSet):
         listing = self.get_object()
         listing.status = 'APPROVED'
         listing.save()
+        # Đồng bộ trạng thái sang Product tương ứng để user ngoài chợ nhìn thấy
+        product = Product.objects.filter(
+            seller=listing.seller,
+            name=listing.title
+        ).order_by('-created_at').first()
+        if product:
+            product.is_approved = True
+            product.save(update_fields=['is_approved'])
 
         # Lưu lại nhật ký để sau này biết ai đã duyệt cái tin này
         AdminAuditLog.objects.create(
@@ -49,6 +58,14 @@ class AdminListingViewSet(viewsets.ReadOnlyModelViewSet):
         listing.status = 'REJECTED'
         listing.reject_reason = reason
         listing.save()
+        # Đồng bộ trạng thái sang Product tương ứng: giữ unapproved để không public
+        product = Product.objects.filter(
+            seller=listing.seller,
+            name=listing.title
+        ).order_by('-created_at').first()
+        if product:
+            product.is_approved = False
+            product.save(update_fields=['is_approved'])
 
         # Log audit kèm lý do từ chối để đối soát khi cần
         AdminAuditLog.objects.create(

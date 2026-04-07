@@ -16,7 +16,7 @@
 							<li
 								class="nav-item transition-all-xl-1 py-11 me-xxl-12 me-xl-10 dropdown dropdown-hover dropdown-fullwidth">
 								<a class="nav-link d-flex justify-content-between position-relative py-0 px-0 text-uppercase fw-semibold ls-1 fs-14px dropdown-toggle"
-									href="index.html" data-bs-toggle="dropdown" id="menu-item-home" aria-haspopup="true"
+									href="#" data-bs-toggle="dropdown" id="menu-item-home" aria-haspopup="true"
 									aria-expanded="false">Xin chào
 									<!-- Hiển thị username nếu đã đăng nhập, ngược lại hiển thị "User" -->
 									{{ authService.isLoggedIn() ? authService.getUsername() : 'User' }}
@@ -30,7 +30,7 @@
 												<ul class="list-unstyled mb-0">
 													<li *ngIf="authService.isLoggedIn() && authService.isAdmin()"
 														class="admin-manage-item">
-														<a href="#" (click)="goToAdminManage()"
+														<a href="#" (click)="goToAdminManage($event)"
 															class="admin-manage-link">
 															ADMIN MANAGE
 														</a>

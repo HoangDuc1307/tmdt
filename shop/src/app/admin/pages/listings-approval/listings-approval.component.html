@@ -1,0 +1,191 @@
+<div class="dashboard-page-content" data-animated-id="1">
+    <div class="row mb-9 align-items-center justify-content-between">
+        <div class="col-sm-6 mb-8 mb-sm-0">
+            <h2 class="fs-4 mb-0">Duyệt bài đăng</h2>
+            <p class="mb-0">Phê duyệt hoặc từ chối tin đăng của người dùng.</p>
+        </div>
+        <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end gap-2">
+            <input id="listingSearch" name="search" class="form-control w-auto" type="text"
+                   placeholder="🔍 Tìm theo tiêu đề..."
+                   [ngModel]="search()" (ngModelChange)="search.set($event)" />
+            <button class="btn btn-primary" (click)="load()" [disabled]="loading()">🔄 Làm mới</button>
+        </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link cursor-pointer" [class.active]="status() === 'ALL'" (click)="setStatus('ALL')">Tất cả</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link cursor-pointer" [class.active]="status() === 'PENDING'" (click)="setStatus('PENDING')">
+                <span class="tab-dot bg-warning me-1"></span>Chờ duyệt
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link cursor-pointer" [class.active]="status() === 'APPROVED'" (click)="setStatus('APPROVED')">
+                <span class="tab-dot bg-success me-1"></span>Đã duyệt
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link cursor-pointer" [class.active]="status() === 'REJECTED'" (click)="setStatus('REJECTED')">
+                <span class="tab-dot bg-danger me-1"></span>Từ chối
+            </a>
+        </li>
+    </ul>
+
+    <div *ngIf="error()" class="alert alert-danger">⚠️ {{ error() }}</div>
+    <div *ngIf="loading()" class="text-muted mb-4">⏳ Đang tải...</div>
+
+    <div class="card mb-4 rounded-4 p-7" *ngIf="!loading()">
+        <div class="card-body px-0 pt-7 pb-0">
+            <div class="table-responsive table-scroll" *ngIf="filteredItems().length; else empty">
+                <table class="table table-hover align-middle table-nowrap mb-0">
+                    <!-- ... table headers ... -->
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tin đăng</th>
+                            <th>Người bán</th>
+                            <th>Giá</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày tạo</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let x of filteredItems()">
+                            <td><strong>#{{ x.id }}</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center flex-nowrap">
+                                    <div class="ms-2">
+                                        <p class="fw-semibold text-body-emphasis mb-0">{{ x.title }}</p>
+                                        <small class="text-muted d-block text-truncate" style="max-width: 250px;">{{ x.description }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ x.seller_username }}</td>
+                            <td>{{ x.price | number:'1.0-0' }} đ</td>
+                            <td>
+                                <span class="badge rounded-pill py-2 px-3 border-0 fs-12"
+                                      [ngClass]="{
+                                          'text-bg-warning': x.status === 'PENDING',
+                                          'text-bg-success': x.status === 'APPROVED',
+                                          'text-bg-danger': x.status === 'REJECTED'
+                                      }">
+                                    {{ x.status === 'PENDING' ? 'Chờ duyệt' : x.status === 'APPROVED' ? 'Đã duyệt' : 'Từ chối' }}
+                                </span>
+                            </td>
+                            <td>{{ x.created_at | date:'dd/MM/yyyy' }}</td>
+                            <td class="text-center">
+                                <div class="d-flex flex-nowrap justify-content-center gap-1">
+                                    <button class="btn btn-outline-info btn-sm py-1 px-2" (click)="viewListing(x)" title="Xem bài viết">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button *ngIf="x.status === 'PENDING'" class="btn btn-outline-success btn-sm py-1 px-2" (click)="approve(x.id)" title="Duyệt">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button *ngIf="x.status === 'PENDING'" class="btn btn-outline-danger btn-sm py-1 px-2" (click)="reject(x.id)" title="Từ chối">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="mt-4">
+                    <app-pagination 
+                        [totalItems]="totalItems()" 
+                        [pageSize]="pageSize" 
+                        [currentPage]="currentPage()" 
+                        (pageChange)="onPageChange($event)">
+                    </app-pagination>
+                </div>
+            </div>
+            <ng-template #empty>
+                <div class="text-center py-5 text-muted">
+                    😕 Không có bài đăng nào
+                    {{ status() === 'ALL' ? '' : status() === 'PENDING' ? 'đang chờ duyệt' : status() === 'APPROVED' ? 'đã duyệt' : 'bị từ chối' }}.
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</div>
+
+<!-- Listing Detail & Price History Modal -->
+<div *ngIf="showListingModal()" class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fs-5 fw-bold">Chi tiết Bài đăng #{{ currentListing()?.id }}</h5>
+                <button type="button" class="btn-close" (click)="closeListingModal()"></button>
+            </div>
+            <div class="modal-body p-5">
+                <div class="row gx-5">
+                    <!-- Thông tin bài viết -->
+                    <div class="col-lg-12">
+                        <h4 class="fw-bold mb-3 text-primary">{{ currentListing()?.title }}</h4>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Người bán:</span>
+                            <span class="fw-semibold">&#64;{{ currentListing()?.seller_username }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Giá hiện tại:</span>
+                            <span class="fw-bold text-success fs-5">{{ currentListing()?.price | number:'1.0-0' }} đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Ngày đăng:</span>
+                            <span>{{ currentListing()?.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="text-muted">Trạng thái:</span>
+                            <span class="badge rounded-pill py-2 px-3 border-0 fs-12"
+                                  [ngClass]="{
+                                      'text-bg-warning': currentListing()?.status === 'PENDING',
+                                      'text-bg-success': currentListing()?.status === 'APPROVED',
+                                      'text-bg-danger': currentListing()?.status === 'REJECTED'
+                                  }">
+                                {{ currentListing()?.status === 'PENDING' ? 'Chờ duyệt' : currentListing()?.status === 'APPROVED' ? 'Đã duyệt' : 'Từ chối' }}
+                            </span>
+                        </div>
+
+                        <div *ngIf="currentListing()?.status === 'REJECTED' && currentListing()?.reject_reason" class="alert alert-danger p-2 fs-14px mb-4">
+                            <strong>Lý do từ chối:</strong> {{ currentListing()?.reject_reason }}
+                        </div>
+
+                        <h6 class="fw-bold mt-4 mb-2">Hình ảnh sản phẩm:</h6>
+                        <div class="d-flex flex-wrap gap-2 mb-3" *ngIf="currentListing()?.images?.length; else noImage">
+                            <a *ngFor="let img of currentListing()?.images" [href]="img.image" target="_blank" class="border rounded p-1 d-inline-block bg-white shadow-sm">
+                                <img [src]="img.image" alt="Listing Image" style="max-height: 80px; max-width: 120px; object-fit: cover; border-radius: 4px;">
+                            </a>
+                        </div>
+                        <ng-template #noImage>
+                            <div class="text-muted fst-italic mb-3 fs-14px">Không có hình ảnh đính kèm.</div>
+                        </ng-template>
+
+                        <h6 class="fw-bold mt-2 mb-2">Mô tả sản phẩm:</h6>
+                        <div class="bg-light p-3 rounded" style="max-height: 150px; overflow-y: auto;">
+                            <p class="mb-0" style="white-space: pre-wrap;">{{ currentListing()?.description || 'Không có mô tả.' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-top-0 pt-0 px-5 pb-4 justify-content-between">
+                <div>
+                     <button *ngIf="currentListing()?.status === 'PENDING'" class="btn btn-success px-4 rounded-pill me-2" (click)="approve(currentListing().id)">
+                         ✅ Duyệt Bài
+                     </button>
+                     <button *ngIf="currentListing()?.status === 'PENDING'" class="btn btn-danger px-4 rounded-pill" (click)="reject(currentListing().id)">
+                         ❌ Từ chối
+                     </button>
+                </div>
+                <button type="button" class="btn btn-secondary px-4 rounded-pill" (click)="closeListingModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+

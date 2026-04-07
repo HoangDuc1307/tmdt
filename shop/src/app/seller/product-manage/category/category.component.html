@@ -1,0 +1,159 @@
+<div [ngClass]="authService.isAdmin() ? 'wrapper dashboard-wrapper' : 'container mt-5 pt-5 mb-5'">
+	<div [ngClass]="authService.isAdmin() ? 'd-flex flex-wrap flex-xl-nowrap' : ''">
+        <app-sidebar *ngIf="authService.isAdmin()"></app-sidebar>
+<div [ngClass]="authService.isAdmin() ? 'page-content' : 'w-100'">
+        <app-headeradmin *ngIf="authService.isAdmin()"></app-headeradmin>
+
+
+<div [ngClass]="authService.isAdmin() ? 'dashboard-page-content' : ''" data-animated-id="1">
+					
+    <div class="row mb-9 align-items-center justify-content-between">
+        
+        <div class="col-sm-6 mb-8 mb-sm-0">
+            <h2 class="fs-4 mb-0">Categories</h2>
+            <p class="mb-0">Lorem ipsum dolor sit amet.</p>
+        </div>
+    
+        <div class="col-sm-6 col-md-3 d-flex flex-wrap justify-content-sm-end">
+            <input class="form-control border-primary w-100" type="text" placeholder="Search Categories" 
+                   [(ngModel)]="searchTerm" (input)="filterCategories()">
+        </div>
+    </div>
+    
+    
+    <div class="card mb-4 rounded-4 p-7">
+        <div class="card-body p-0">
+            <!-- Error Message -->
+            <div *ngIf="error" class="alert alert-danger mx-3 mt-3" role="alert">
+                {{ error }}
+            </div>
+            
+            <!-- Loading Spinner -->
+            <div *ngIf="loading" class="text-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <form (ngSubmit)="category.id ? updateCategory(category.id) : createCategory()">
+                        <div class="mb-8">
+                            <label for="category_name" class="mb-5 fs-13px ls-1 fw-semibold text-uppercase">Name</label>
+                            <input type="text" placeholder="Type here" class="form-control" id="category_name" 
+                                   [(ngModel)]="category.name" name="name" required>
+                        </div>
+                       
+                        <div class="mb-8">
+                            <label for="category_description" class="mb-5 fs-13px ls-1 fw-semibold text-uppercase">Description</label>
+                            <textarea placeholder="Type here" class="form-control" 
+                                      [(ngModel)]="category.description" name="description"></textarea>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" [disabled]="loading">
+                                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                {{ category.id ? 'Update' : 'Create' }} category
+                            </button>
+                            <button *ngIf="category.id" type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="loading">
+                                Cancel Edit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-9">
+                    <div class="card-body px-0 pt-7 pb-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-nowrap mb-0 table-borderless"><thead class="table-light">
+                        <tr>
+                            
+                            <th scope="col" class="text-center">
+                                <div class="form-check align-middle">
+                                    <input class="form-check-input rounded-0 ms-0" type="checkbox" id="transactionCheck01">
+                                    <label class="form-check-label" for="transactionCheck01"></label>
+                                </div>
+                            </th><th class="align-middle" scope="col">ID
+                            </th>
+                            <th class="align-middle" scope="col">Name
+                            </th>
+                            <th class="align-middle" scope="col">Description
+                            </th>
+                            <th class="align-middle" scope="col">Products
+                            </th>
+                            <th class="align-middle text-center" scope="col">Actions
+                            </th>
+                            
+                        </tr>
+                    </thead>
+                    
+                    <tbody>
+    
+                
+                <tr *ngFor="let category of filteredCategories || []">
+                    
+                    <td class="text-center">
+                        <div class="form-check">
+                            <input class="form-check-input rounded-0 ms-0" type="checkbox" id="transactionCheck-0">
+                            <label class="form-check-label" for="transactionCheck-0"></label>
+                        </div>
+                    </td>
+                    <td><a href="#">#{{category.id}}</a></td>
+                    
+                    <td class="text-body-emphasis">{{category.name}}</td>
+    
+                    
+                        <td class="text-body-emphasis">{{category.description}}</td>
+                    
+                       
+                    
+                        <td>
+                            <span *ngIf="categoryProductCounts[category.id] !== undefined">{{categoryProductCounts[category.id]}}</span>
+                            <span *ngIf="categoryProductCounts[category.id] === undefined" class="text-muted">
+                                <small>Loading...</small>
+                            </span>
+                        </td>
+                    <td class="text-center">
+                        <div class="d-flex flex-nowrap justify-content-center">
+                            <div class="dropdown no-caret">
+                                <a href="#" data-bs-toggle="dropdown" class="dropdown-toggle btn btn-outline-primary btn-xs hover-white btn-hover-bg-primary py-4 px-5">
+                                    <i class="far fa-ellipsis-h"></i> </a>
+                                <div class="dropdown-menu dropdown-menu-end m-0">
+                                    <a class="dropdown-item" href="#" (click)="editCategory(category)">Edit info</a>
+                                    <a class="dropdown-item text-danger" href="#" (click)="deleteCategory(category.id)">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- No data message -->
+                <tr *ngIf="!loading && (!filteredCategories || filteredCategories.length === 0)">
+                    <td colspan="7" class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="far fa-folder-open fs-2 mb-3"></i>
+                            <p class="mb-0">No categories found</p>
+                            <small>Create your first category using the form on the left</small>
+                        </div>
+                    </td>
+                </tr>
+                
+               
+               
+                
+               
+                
+                
+               
+                </tbody>
+            </table>
+        </div>
+    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+                    </div>
+                </div>
+            </div>
+        </div>

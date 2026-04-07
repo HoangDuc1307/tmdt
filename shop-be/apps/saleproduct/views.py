@@ -5,8 +5,9 @@ from .serializers import SaleProductSerializer
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAdminUser,AllowAny
+from rest_framework.permissions import IsAdminUser, AllowAny
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 class ActiveSaleProductListAPIView(generics.ListAPIView):
     serializer_class = SaleProductSerializer
@@ -53,5 +54,18 @@ class DeleteSaleProductAPIView(APIView):
             sale = SaleProduct.objects.get(product_id=product_id)
             sale.delete()
             return Response({'message': f'Sale cho sản phẩm {product_id} đã được xóa.'}, status=status.HTTP_204_NO_CONTENT)
+        except SaleProduct.DoesNotExist:
+            return Response({'error': 'Không tìm thấy sale cho sản phẩm này.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class SaleProductByProductIdAPIView(APIView):
+    """Lấy thông tin sale hiện tại của 1 sản phẩm theo product_id"""
+    permission_classes = [AllowAny]
+
+    def get(self, request, product_id):
+        try:
+            sale = SaleProduct.objects.get(product_id=product_id)
+            serializer = SaleProductSerializer(sale)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except SaleProduct.DoesNotExist:
             return Response({'error': 'Không tìm thấy sale cho sản phẩm này.'}, status=status.HTTP_404_NOT_FOUND)

@@ -1,0 +1,131 @@
+<div class="wrapper dashboard-wrapper">
+	<div class="d-flex flex-wrap flex-xl-nowrap">
+        <app-sidebar></app-sidebar>
+<div class="page-content">
+        <app-headeradmin></app-headeradmin>
+<div class="chat-management-container">
+  <!-- Header -->
+  
+
+  <div class="chat-content">
+    <!-- Sidebar - Danh sách người dùng -->
+    <div class="chat-sidebar">
+      <div class="sidebar-header">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Tìm kiếm người dùng..." [(ngModel)]="searchTerm">
+        </div>
+        <div class="filter-tabs">
+          <button class="tab-btn active" (click)="setFilter('all')">Tất cả</button>
+          <button class="tab-btn" (click)="setFilter('online')">Online</button>
+          <button class="tab-btn" (click)="setFilter('waiting')">Chờ hỗ trợ</button>
+        </div>
+      </div>
+      
+      <div class="users-list">
+        <div class="user-item" 
+             *ngFor="let user of filteredUsers" 
+             [class.active]="selectedUser?.id === user.id"
+             (click)="selectUser(user)">
+          <div class="user-avatar">
+            <img src="../assets/images/dashboard/avatar-2.png" alt="Ronald Hunter" class="rounded-circle" width="40">
+            <span class="status-indicator" [class]="user.status"></span>
+          </div>
+          <div class="user-info">
+            <h3>{{ user.name }}</h3>
+            <p class="user-status">
+              <span class="status-dot" [class]="user.status"></span>
+              {{ getStatusText(user.status) }}
+            </p>
+            <p class="last-message" *ngIf="user.lastMessage">{{ user.lastMessage }}</p>
+          </div>
+          <div class="user-meta">
+            <span class="time">{{ user.lastActive | date:'HH:mm' }}</span>
+            <span class="unread-count" *ngIf="user.unreadCount > 0">{{ user.unreadCount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+      <div class="chat-window" *ngIf="selectedUser; else noUserSelected">
+        <!-- Chat Header -->
+        <div class="chat-window-header">
+          <div class="user-info">
+            <img src="../assets/images/dashboard/avatar-2.png" alt="Ronald Hunter" class="rounded-circle" width="40">
+            <div>
+              <h3>{{ selectedUser.name }}</h3>
+              <p>
+                <span class="status-dot" [class]="selectedUser.status"></span>
+                {{ getStatusText(selectedUser.status) }}
+              </p>
+            </div>
+          </div>
+          <div class="chat-actions">
+            <button class="btn-action" title="Thông tin người dùng">
+              <i class="fas fa-info-circle"></i>
+            </button>
+            <button class="btn-action" title="Lịch sử chat">
+              <i class="fas fa-history"></i>
+            </button>
+            <button class="btn-action" title="Kết thúc chat">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages-container" #messagesContainer>
+          <div class="message" 
+               *ngFor="let message of messages" 
+               [class.user-message]="message.sender === 'user'"
+               [class.admin-message]="message.sender === 'admin'">
+            <div class="message-content">
+              <div class="message-bubble">
+                <p>{{ message.text }}</p>
+                <span class="message-time">{{ message.timestamp | date:'HH:mm' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="message-input-container">
+          <div class="input-wrapper">
+            <textarea 
+              [(ngModel)]="newMessage" 
+              placeholder="Nhập tin nhắn..."
+              (keydown)="onKeyDown($event)"
+              rows="1"></textarea>
+            <div class="input-actions">
+              <button class="btn-attachment" title="Đính kèm file">
+                <i class="fas fa-paperclip"></i>
+              </button>
+              <button class="btn-emoji" title="Emoji">
+                <i class="fas fa-smile"></i>
+              </button>
+              <button class="btn-send" (click)="sendMessage()" [disabled]="!newMessage.trim()">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No User Selected -->
+      <ng-template #noUserSelected>
+        <div class="no-user-selected">
+          <div class="empty-state">
+            <i class="fas fa-comments"></i>
+            <h3>Chọn một cuộc trò chuyện</h3>
+            <p>Chọn một người dùng từ danh sách bên trái để bắt đầu chat</p>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+ </div>
+  </div>
+   </div>

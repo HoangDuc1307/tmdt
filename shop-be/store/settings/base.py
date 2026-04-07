@@ -115,9 +115,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'apps.marketplace.auth.CsrfExemptSessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -127,18 +125,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 8,
 
 }
-
-# Session & CSRF settings cho admin API
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_HTTPONLY = True
-SESSION_SAVE_EVERY_REQUEST = True
-
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:4200',
-    'http://127.0.0.1:4200',
-    'http://localhost:53587',
-    'http://127.0.0.1:53587',
-]
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development

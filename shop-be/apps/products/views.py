@@ -9,6 +9,7 @@ from .models import Product,Category
 from .serializers import ProductSerializer,CategorySerializer
 from core.permissions import IsOwnerOrAdminOrReadOnly
 from chatbot.chat_utils import prepare_knowledge_base_sync
+from apps.marketplace.models import Listing
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all().order_by('-id')
@@ -43,6 +44,14 @@ class ProductViewSet(viewsets.ModelViewSet):
         user = self.request.user
         is_approved = user.is_staff
         instance = serializer.save(seller=user, is_approved=is_approved)
+        # Sync sang marketplace listing để admin system có thể duyệt theo luồng /api/admin/listings/
+        Listing.objects.create(
+            seller=user,
+            title=instance.name,
+            description=instance.description,
+            price=instance.price,
+            status='APPROVED' if is_approved else 'PENDING',
+        )
         prepare_knowledge_base_sync()
         return instance
 
@@ -51,6 +60,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         if not user.is_staff and 'is_approved' in serializer.validated_data:
             serializer.validated_data.pop('is_approved')
         instance = serializer.save()
+        # Đồng bộ listing gần nhất cùng seller + title để tránh lệch dữ liệu hiển thị duyệt bài
+        listing = Listing.objects.filter(
+            seller=instance.seller,
+            title=instance.name
+        ).order_by('-created_at').first()
+        if listing:
+            listing.description = instance.description
+            listing.price = instance.price
+            listing.save(update_fields=['description', 'price'])
         prepare_knowledge_base_sync()
         return instance
 

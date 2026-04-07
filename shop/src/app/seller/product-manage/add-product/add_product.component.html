@@ -1,0 +1,107 @@
+<div [ngClass]="authService.isAdmin() ? 'wrapper dashboard-wrapper' : 'container mt-5 pt-5 mb-5'">
+	<div [ngClass]="authService.isAdmin() ? 'd-flex flex-wrap flex-xl-nowrap' : ''">
+        <app-sidebar *ngIf="authService.isAdmin()"></app-sidebar>
+<div [ngClass]="authService.isAdmin() ? 'page-content' : 'w-100'">
+        <app-headeradmin *ngIf="authService.isAdmin()"></app-headeradmin>
+<div [ngClass]="authService.isAdmin() ? 'dashboard-page-content' : ''">					
+    <div class="row mb-9 align-items-center">
+        <div class="col-xxl-9">
+            <div class="row">
+                <div class="col-sm-6 mb-8 mb-sm-0">
+                    <h2 class="fs-4 mb-0">Add New Product</h2>
+                </div>
+                <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end">
+        <button (click)="onSubmit()" class="btn btn-primary">
+            Publish
+        </button>
+        
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-xxl-9">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card mb-8 rounded-4">
+                        <div class="card-header p-7 bg-transparent">
+                            <h4 class="fs-18 mb-0 font-weight-500">Basic</h4>
+                        </div>
+                        <div class="card-body p-7">
+                            <form class="form-border-1" (ngSubmit)="onSubmit()">
+                                <div class="mb-8">
+                                    <label for="product_title" class="mb-4 fs-13px ls-1 fw-bold text-uppercase">Product name</label>
+                                    <input type="text" placeholder="Type here" class="form-control" id="product_title" [(ngModel)]="product.name" name="name">
+                                </div>
+                                <div class="mb-8">
+                                    <label class="mb-4 fs-13px ls-1 fw-bold text-uppercase">description</label>
+                                    <textarea placeholder="Type here" class="form-control" rows="4" [(ngModel)]="product.description" name="description"></textarea>
+                                </div>
+                                <div class="col-sm-6 mb-6 px-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <label class="fs-13px ls-1 fw-bold text-uppercase mb-0" for="category">Category</label>
+                                        <button type="button" class="btn btn-sm btn-link p-0 text-primary text-decoration-none" (click)="toggleAddCategory()">
+                                            {{ showAddCategory ? 'Cancel' : '+ Create new' }}
+                                        </button>
+                                    </div>
+
+                                    <!-- Form thêm category mới -->
+                                    <div *ngIf="showAddCategory" class="mb-4 p-3 border rounded bg-light">
+                                        <input type="text" placeholder="Category name" class="form-control form-control-sm mb-2" [(ngModel)]="newCategory.name" name="newCatName">
+                                        <button type="button" class="btn btn-primary btn-sm w-100" (click)="onAddCategory()">Add Category</button>
+                                    </div>
+
+                                    <select class="form-select" id="category" [(ngModel)]="product.category" name="category" required>
+                                        <option value="" disabled selected>-- Chọn category --</option>
+                                        <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-4">
+                                        <div class="mb-8">
+                                            <label class="mb-4 fs-13px ls-1 fw-bold text-uppercase" for="regular-price">price (VND)</label>
+                                            <input placeholder="VND" type="text" class="form-control" id="regular-price" [(ngModel)]="product.price" name="price">
+                                        </div>
+                                    </div>
+                                    
+                                  
+                                </div>
+                                <div class="mb-8">
+                                    <label class="mb-4 fs-13px ls-1 fw-bold text-uppercase" for="quantity">Quantity</label>
+                                    <input type="text" placeholder="Number" class="form-control" id="quantity" [(ngModel)]="product.quantity" name="quantity">
+                                </div>
+                                <div class="mb-8">
+                                    <label class="mb-4 fs-13px ls-1 fw-bold text-uppercase" for="image">Image</label>
+                                    <input type="text" placeholder="URL" class="form-control" id="image" [(ngModel)]="product.image" name="image">
+                                </div>
+                                <div *ngIf="message" class="alert alert-success">{{ message }}</div>
+                                <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+                <div class="col-lg-4">
+                    <div  class="card mb-8 rounded-4">
+                        <div class="card-header p-7 bg-transparent">
+                            <h4 class="fs-18px mb-0 font-weight-500">Media</h4>
+                        </div>
+                        <div class="card-body p-7">
+                            <div class="input-upload">
+                                <div class="mb-7">
+                                    <img [src]="product.image" width="102" class="d-block mx-auto" alt="">
+                                </div>
+                                <input class="form-control" type="file">
+                            </div>
+                        </div>
+                    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
+                    </div>
+                    </div>
+                    </div>
+                </div>

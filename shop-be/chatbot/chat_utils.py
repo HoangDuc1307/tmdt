@@ -15,9 +15,7 @@ from langchain_core.documents import Document
 load_dotenv()
 openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 openrouter_model = os.getenv("OPENROUTER_MODEL")
-
-if not openrouter_api_key or not openrouter_model:
-    raise EnvironmentError("OpenRouter API Key hoặc Model chưa được cấu hình. Kiểm tra file .env.")
+llm_enabled = bool(openrouter_api_key and openrouter_model)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SQLITE_DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
@@ -29,12 +27,14 @@ SQLITE_DB_PATH = os.path.join(BASE_DIR, "db.sqlite3")
 
 
 # ==================== LLM ====================
-llm = ChatOpenAI(
-    model=openrouter_model,
-    temperature=0.03,
-    api_key=SecretStr(openrouter_api_key),
-    base_url="https://openrouter.ai/api/v1",
-)
+llm = None
+if llm_enabled:
+    llm = ChatOpenAI(
+        model=openrouter_model,
+        temperature=0.03,
+        api_key=SecretStr(openrouter_api_key),
+        base_url="https://openrouter.ai/api/v1",
+    )
 
 
 # ==================== GLOBAL STATE ====================
@@ -49,7 +49,7 @@ def fetch_data_from_database(user_id=None):
     db_documents = []
     #if not all([db_host, db_name, db_user, db_password, db_port]):
     if not os.path.exists(SQLITE_DB_PATH):
-        print(" Sai cấu hình Database trong .env")
+        print("Invalid database configuration in .env")
         return db_documents
 
     conn = None
@@ -94,10 +94,10 @@ def fetch_data_from_database(user_id=None):
             db_documents.append(Document(page_content=content, metadata=metadata))
 
         cur.close()
-        print(f" Đã tải {len(db_documents)} document từ database.")
+        print(f"Loaded {len(db_documents)} documents from database.")
 
     except Exception as e:
-        print(f" Lỗi khi truy vấn database: {e}")
+        print(f"Database query error: {e}")
     finally:
         if conn:
             conn.close()
@@ -108,7 +108,7 @@ def fetch_data_from_database(user_id=None):
 # ==================== KNOWLEDGE BASE ====================
 def prepare_knowledge_base_sync(data_dir="data"):
     global knowledge_base, is_rag_ready, global_embeddings
-    print(" Bỏ qua tải RAG Model cục bộ do giới hạn bộ nhớ hệ thống (RAM). Sử dụng LLM cloud cơ bản.")
+    print("Skip loading local RAG model due to memory limits. Using basic cloud LLM mode.")
     is_rag_ready = False
     return
 
@@ -118,7 +118,7 @@ def rewrite_user_question(user_message: str, chat_history_parsed: list[BaseMessa
     total_messages = len(chat_history_parsed)
     ai_messages = [msg for msg in chat_history_parsed if isinstance(msg, AIMessage)]
     user_messages = [msg for msg in chat_history_parsed if isinstance(msg, HumanMessage)]
-    print(f"DEBUG - Tổng tin nhắn: {total_messages}, AI: {len(ai_messages)}, User: {len(user_messages)}")
+    print(f"DEBUG - Total messages: {total_messages}, AI: {len(ai_messages)}, User: {len(user_messages)}")
 
     filtered = []
     ai_count = 0
@@ -159,12 +159,12 @@ def rewrite_user_question(user_message: str, chat_history_parsed: list[BaseMessa
         response = llm.invoke([HumanMessage(content=prompt_text)])
         rewritten = (response.content or user_message).strip()
     except Exception as e:
-        print(f" Rewrite lỗi: {e}")
+        print(f"Rewrite error: {e}")
         return user_message
 
-    print("Đoạn hội thoại gần nhất")
+    print("Latest conversation context")
     print(history_text)
-    print("Câu hỏi đã rewrite:")
+    print("Rewritten question:")
     print(rewritten)
 
     return rewritten
@@ -190,6 +190,15 @@ def get_chatbot_response(user_message: str, chat_history_raw: list, user_id: int
     combined_history = global_chat_history.copy()
     combined_history.append({"role": "human", "content": user_message})
 
+    # Do not block the whole backend when chatbot env is missing.
+    if not llm_enabled or llm is None:
+        return {
+            "answer": (
+                "Chatbot tam thoi chua duoc cau hinh OPENROUTER_API_KEY/OPENROUTER_MODEL. "
+                "Ban van co the su dung day du cac chuc nang chinh cua san."
+            )
+        }
+
     # Parse history
     chat_history_parsed: list[BaseMessage] = []
     for msg in combined_history:
@@ -212,7 +221,7 @@ def get_chatbot_response(user_message: str, chat_history_raw: list, user_id: int
 
         # ================= RAG FLOW (MANUAL, SAFE) =================
         if is_rag_ready and knowledge_base:
-            print("...Rag đang được sử dụng...")
+            print("Using RAG mode...")
             retriever = knowledge_base.as_retriever(search_kwargs={"k": 10})
             docs = retriever.invoke(user_message_rewritten)
 
@@ -240,7 +249,7 @@ def get_chatbot_response(user_message: str, chat_history_raw: list, user_id: int
 
         # ================= FALLBACK FLOW =================
         else:
-            print("💬 Sử dụng LLM cơ bản (không RAG).")
+            print("Using basic LLM mode (no RAG).")
             if not chat_history_parsed or chat_history_parsed[0].type != "system":
                 chat_history_parsed.insert(
                     0, SystemMessage(content="Bạn là một trợ lý AI hữu ích và thân thiện. Bạn sẽ trả lời bằng tiếng Việt.")
@@ -256,5 +265,5 @@ def get_chatbot_response(user_message: str, chat_history_raw: list, user_id: int
         return {"answer": ai_response}
 
     except Exception as e:
-        print(f"❌ Lỗi LangChain/LLM khi xử lý chat: {e}")
+        print(f"LangChain/LLM processing error: {e}")
         return {"answer": "Xin lỗi, tôi đang gặp vấn đề nội bộ. Vui lòng thử lại sau."}

@@ -7,21 +7,3 @@
     display:block;
     
 }
-
-/* Admin Dashboard layout styles */
-.wrapper {
-    display: block;
-    min-height: 100vh;
-}
-
-.main {
-    padding: 1.75rem 2rem;
-    max-width: 1440px;
-    margin: 0 auto;
-}
-
-@media (max-width: 900px) {
-    .main {
-        padding: 1.25rem 1rem;
-    }
-}

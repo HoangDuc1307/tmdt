@@ -37,7 +37,9 @@ export class LoginComponent {
           // Lưu JWT tokens và thông tin user vào localStorage
           this.authService.saveTokens(res.access, res.refresh, res.user);
 
-          // Điều hướng dựa trên quyền admin
+          // Điều hướng:
+          // - Tài khoản hệ thống (is_staff = true) -> admin system dashboard
+          // - Người dùng/seller thường -> trang chủ
           if (res.user && res.user.is_staff === true) {
             this.router.navigate(['/admin']);
           } else {

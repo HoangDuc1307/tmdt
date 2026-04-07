@@ -1,69 +1,141 @@
-# Dự án TMDT: Shop & Shop-BE
+# Du an TMDT: `shop` + `shop-be`
 
-Dự án này bao gồm cả phần Frontend (Angular) và Backend (Django) cho ứng dụng thương mại điện tử.
+Du an gom:
+- `shop`: Frontend Angular
+- `shop-be`: Backend Django + DRF
 
-## Cấu trúc dự án
+Muc tieu: san thuong mai dien tu cho phep nguoi dung mua/ban, co phan quan tri he thong (admin) rieng.
 
-- `shop/`: Mã nguồn Frontend (Angular).
-- `shop-be/`: Mã nguồn Backend (Django/Python).
+## 1) Yeu cau moi truong
 
----
+- Node.js: khuyen dung `18.x` (hoac moi hon, thong nhat trong team)
+- npm: di kem theo Node
+- Python: `3.10+`
 
-## Hướng dẫn cài đặt và chạy dự án
+## 2) Clone va cai dat nhanh
 
-### 1. Yêu cầu tiên quyết
+```bash
+git clone https://github.com/HoangDuc1307/tmdt.git
+cd tmdt
+```
 
-- Cài đặt **Node.js** (Khuyên dùng v18 hoặc mới hơn).
-- Cài đặt **Python** (v3.10 hoặc mới hơn).
-- Cài đặt **Angular CLI** nếu chưa có: `npm install -g @angular/cli`.
+### Backend (`shop-be`)
 
-### 2. Thiết lập Backend (shop-be)
+```bash
+cd shop-be
+python -m venv .venv
+```
 
-1. Mở terminal và di chuyển vào thư mục:
-   ```bash
-   cd shop-be
-   ```
-2. Tạo môi trường ảo (Virtual Environment):
-   ```bash
-   python -m venv venv
-   ```
-3. Kích hoạt môi trường ảo:
-   - **Windows**: `.\venv\Scripts\activate`
-   - **macOS/Linux**: `source venv/bin/activate`
-4. Cài đặt các thư viện:
-   ```bash
-   pip install -r requirements.txt
-   ```
-5. Cấu hình môi trường:
-   - Tạo file `.env` bằng cách sao chép từ `.env.example`: `copy .env.example .env`
-   - Mở file `.env` và điền các khóa API và Secret Key của bạn.
-6. Chạy các lệnh migration:
-   ```bash
-   python manage.py migrate
-   ```
-7. Khởi động server:
-   ```bash
-   python manage.py runserver
-   ```
+Kich hoat venv:
+- Windows (PowerShell):
+  ```powershell
+  .\.venv\Scripts\Activate.ps1
+  ```
+- Windows (CMD):
+  ```cmd
+  .\.venv\Scripts\activate
+  ```
+- macOS/Linux:
+  ```bash
+  source .venv/bin/activate
+  ```
 
-### 3. Thiết lập Frontend (shop)
+Cai thu vien va chay backend:
 
-1. Mở terminal mới và di chuyển vào thư mục:
-   ```bash
-   cd shop
-   ```
-2. Cài đặt các gói phụ thuộc:
-   ```bash
-   npm install
-   ```
-3. Khởi động ứng dụng:
-   ```bash
-   npm start
-   ```
-   Sau đó, truy cập vào: `http://localhost:4200/`.
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
 
----
+Backend mac dinh: `http://127.0.0.1:8000`
 
-## Lưu ý quan trọng
-- Không bao giờ đẩy các file `.env` hoặc `db.sqlite3` lên Git. 
-- Mọi người khi clone code về cần tự tạo file `.env` theo mẫu đã cung cấp.
+### Frontend (`shop`)
+
+Mo terminal moi:
+
+```bash
+cd shop
+npm install
+npm start
+```
+
+Frontend mac dinh: `http://localhost:4200`
+
+## 3) Cac bien moi truong
+
+### Backend env (`shop-be/.env`)
+
+Can tao file `.env` tu mau `.env.example` (neu co):
+
+```bash
+copy .env.example .env
+```
+
+Luu y:
+- Chatbot/OpenRouter la tuy chon. Neu thieu key, backend van chay, chatbot se tra ve fallback message.
+- Tuyet doi khong commit `.env` len git.
+
+## 4) Co che auth hien tai (quan trong)
+
+Du an dang dung JWT (SimpleJWT):
+- Header auth: `Authorization: Bearer <access_token>`
+- Frontend luu:
+  - `access_token`
+  - `refresh_token`
+  - `userInfo`
+  trong `localStorage`
+- Access token het han se gay `401` neu request khong duoc refresh/dang nhap lai.
+
+## 5) Role va test nhanh
+
+Nen co toi thieu 3 loai tai khoan de test:
+- user thuong
+- seller (nguoi dang ban)
+- admin he thong (`is_staff = true`)
+
+Test flow co ban:
+1. Dang ky/Dang nhap
+2. Dang bai (seller)
+3. Duyet bai (admin)
+4. Mua hang (user)
+5. Bao cao (report) va xu ly report (admin)
+
+## 6) Loi hay gap va cach xu ly
+
+- `401 Unauthorized`
+  - Kiem tra da login chua
+  - Kiem tra request co header `Bearer` chua
+  - Thu logout/login lai de lay token moi
+
+- Python bao thieu thu vien (vi du `openpyxl`)
+  - Dam bao dang o dung venv
+  - Chay lai: `pip install -r requirements.txt`
+
+- Frontend loi sau khi pull code
+  - Xoa `node_modules` + cai lai:
+    ```bash
+    npm install
+    ```
+  - Dong bo Node version trong team
+
+## 7) Quy tac git trong team
+
+- Khong commit cac file moi truong/rac:
+  - `.env`
+  - `db.sqlite3`
+  - `.venv/`
+  - `.vscode/`
+  - cache/log tam
+- Truoc khi push:
+  - Chay backend + frontend local
+  - Kiem tra flow login va mot API can auth
+
+## 8) Cau truc thu muc
+
+```text
+tmdt/
+  shop/       # Angular frontend
+  shop-be/    # Django backend
+```
+

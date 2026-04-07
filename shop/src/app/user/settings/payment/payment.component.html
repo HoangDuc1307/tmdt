@@ -1,0 +1,53 @@
+<div class="settings-section">
+  <div class="section-header type-flex">
+    <div>
+      <h3 class="section-title">Phương Thức Thanh Toán</h3>
+      <p class="section-desc">Quản lý thẻ tín dụng và các ví điện tử đã liên kết</p>
+    </div>
+    <button class="btn btn-primary">+ Thêm thẻ mới</button>
+  </div>
+
+  <div class="payment-group">
+    <h4>Thẻ Tín Dụng / Ghi Nợ</h4>
+    <div class="card-list">
+      <div class="payment-card" *ngFor="let card of savedCards" [class.is-default]="card.isDefault">
+        <div class="card-logo">
+          <span class="logo-text" [ngClass]="card.type.toLowerCase()">{{ card.type }}</span>
+        </div>
+        <div class="card-details">
+          <div class="card-number">•••• •••• •••• {{ card.last4 }}</div>
+          <div class="card-expiry">Hết hạn: {{ card.expiry }}</div>
+        </div>
+        <div class="card-status">
+          <span class="badge default-badge" *ngIf="card.isDefault">Mặc định</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-text" *ngIf="!card.isDefault" (click)="setDefault(card)">Đặt mặc định</button>
+          <button class="btn-text text-danger" (click)="removeCard(card)">Xóa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="payment-group">
+    <h4>Ví Điện Tử</h4>
+    <div class="wallet-list">
+      <div class="wallet-item" *ngFor="let wallet of linkedWallets">
+        <div class="wallet-info">
+          <div class="wallet-icon">💳</div>
+          <div class="wallet-name">
+            <strong>{{ wallet.name }}</strong>
+            <span class="wallet-account" *ngIf="wallet.account">{{ wallet.account }}</span>
+          </div>
+        </div>
+        <div class="wallet-action">
+          <button class="btn btn-outline" *ngIf="wallet.status === 'not-connected'">Liên kết</button>
+          <span class="status-badge connected" *ngIf="wallet.status === 'connected'">Đã liên kết</span>
+          <button class="btn-text text-danger" *ngIf="wallet.status === 'connected'" style="margin-left: 12px;">Hủy liên kết</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

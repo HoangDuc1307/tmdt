@@ -13,7 +13,21 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['first_name', 'last_name', 'address', 'phone', 'email', 'image','user_id']
+        fields = [
+            'first_name', 'last_name', 'address', 'phone', 'email', 'image',
+            'bio', 'date_of_birth', 'gender', 'language_preference', 'user_id'
+        ]
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True, min_length=6)
+    confirm_password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError({'confirm_password': 'Mật khẩu mới không khớp.'})
+        return data
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -31,4 +45,4 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_staff': self.user.is_staff,
             'is_superuser': self.user.is_superuser
         }
-        return data 
+        return data

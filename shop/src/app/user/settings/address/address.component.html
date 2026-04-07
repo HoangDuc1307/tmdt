@@ -1,0 +1,95 @@
+<div class="settings-section">
+  <div class="section-header type-flex">
+    <div>
+      <h3 class="section-title">Sổ Địa Chỉ</h3>
+      <p class="section-desc">Quản lý các địa chỉ nhận hàng của bạn.</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddForm()" *ngIf="!showForm">+ Thêm địa chỉ mới</button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && !showForm" class="loading-state">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Address List -->
+  <div class="address-list" *ngIf="!showForm && !loading">
+    <div class="empty-state" *ngIf="addresses.length === 0">
+      <p>Bạn chưa có địa chỉ nào.</p>
+    </div>
+
+    <div class="address-card" *ngFor="let addr of addresses" [class.is-default]="addr.is_default">
+      <div class="card-header">
+        <div class="name-phone">
+          <span class="name">{{ addr.full_name }}</span>
+          <span class="separator">|</span>
+          <span class="phone">{{ addr.phone }}</span>
+        </div>
+        <span class="badge default-badge" *ngIf="addr.is_default">Mặc định</span>
+      </div>
+      <div class="card-body">
+        <p class="address-line">{{ addr.address_line }}</p>
+        <p class="address-zone">{{ addr.ward ? addr.ward + ', ' : '' }}{{ addr.district ? addr.district + ', ' : '' }}{{ addr.province }}</p>
+      </div>
+      <div class="card-actions">
+        <div>
+          <button class="btn-text text-primary" *ngIf="!addr.is_default" (click)="setDefault(addr.id)">Thiết lập mặc định</button>
+        </div>
+        <div class="action-group">
+          <button class="btn-text" (click)="openEditForm(addr)">Sửa</button>
+          <button class="btn-text text-danger" (click)="deleteAddress(addr.id)">Xóa</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Form -->
+  <div class="form-container" *ngIf="showForm">
+    <h4 class="form-title">{{ editingId ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới' }}</h4>
+    <form [formGroup]="addressForm" (ngSubmit)="saveAddress()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Họ và tên</label>
+          <input type="text" formControlName="full_name" class="form-control" placeholder="Tên người nhận">
+        </div>
+        <div class="form-group">
+          <label>Số điện thoại</label>
+          <input type="text" formControlName="phone" class="form-control" placeholder="Số điện thoại liên hệ">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Tỉnh/Thành phố</label>
+        <input type="text" formControlName="province" class="form-control" placeholder="VD: TP. Hồ Chí Minh">
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quận/Huyện</label>
+          <input type="text" formControlName="district" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Phường/Xã</label>
+          <input type="text" formControlName="ward" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Địa chỉ cụ thể</label>
+        <textarea formControlName="address_line" class="form-control" rows="2" placeholder="Số nhà, tên đường..."></textarea>
+      </div>
+
+      <!-- Google Maps Placeholder/Demo -->
+      <div class="gmaps-demo">
+        <div class="map-placeholder">
+           📍 Bản đồ đang được tích hợp (Google Maps)
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" (click)="closeForm()">Hủy</button>
+        <button type="submit" class="btn btn-primary" [disabled]="addressForm.invalid">Lưu địa chỉ</button>
+      </div>
+    </form>
+  </div>
+</div>

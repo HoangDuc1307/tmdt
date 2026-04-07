@@ -1,0 +1,147 @@
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section-header {
+  border-bottom: 1px solid #eaeaea;
+  padding-bottom: 16px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #111;
+}
+
+.section-desc {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.forms-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.form-card h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.form-control {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  outline: none;
+  font-family: inherit;
+  background-color: #fcfcfc;
+}
+
+.form-control:focus {
+  border-color: #4f46e5;
+  background-color: #fff;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+textarea.form-control {
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.btn-primary:not(:disabled):hover {
+  background-color: #4338ca;
+}
+
+.btn-danger {
+  background-color: #e11d48;
+  color: white;
+}
+
+.btn-danger:not(:disabled):hover {
+  background-color: #be123c;
+}
+
+.success-msg {
+  color: #16a34a;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.alert-msg {
+  color: #e11d48;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #eaeaea;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}

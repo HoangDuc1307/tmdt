@@ -1,0 +1,103 @@
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.section-header { border-bottom: 1px solid #eaeaea; padding-bottom: 16px; }
+.section-title { font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0; }
+.section-desc { color: #666; font-size: 0.95rem; margin: 0; }
+
+.tier-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px;
+  border-radius: 16px;
+  color: white;
+  margin-bottom: 32px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-card.bronze { background: linear-gradient(135deg, #cd7f32, #8b5a2b); }
+.tier-card.silver { background: linear-gradient(135deg, #c0c0c0, #808080); }
+.tier-card.gold { background: linear-gradient(135deg, #ffd700, #b8860b); }
+.tier-card.platinum { background: linear-gradient(135deg, #e5e4e2, #778899); color: #333; }
+
+.tier-name {
+  margin: 0 0 16px 0;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+.points-display {
+  display: flex;
+  flex-direction: column;
+}
+
+.points-value {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.points-label {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.tier-icon {
+  font-size: 6rem;
+  opacity: 0.2;
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+}
+
+.history-section h4 {
+  font-size: 1.1rem;
+  color: #111;
+  margin-bottom: 16px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  border: 1px solid #eaeaea;
+}
+
+.history-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.history-desc {
+  font-weight: 500;
+  color: #333;
+}
+
+.history-date {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.history-right {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.history-right.positive { color: #10b981; }
+.history-right.negative { color: #ef4444; }

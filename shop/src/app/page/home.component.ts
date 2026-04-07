@@ -109,7 +109,10 @@ export class HomeComponent implements OnInit {
 
     // Lọc theo Category
     if (this.selectedCategoryId) {
-      filtered = filtered.filter(p => p.category == this.selectedCategoryId);
+      filtered = filtered.filter(p => {
+        const catId = (p.category && typeof p.category === 'object') ? p.category.id : p.category;
+        return String(catId) === String(this.selectedCategoryId);
+      });
     }
 
     // Lọc theo khoảng giá

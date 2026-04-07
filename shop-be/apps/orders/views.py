@@ -204,5 +204,25 @@ class VNPayReturnView(APIView):
                 return Response({"message": "Thanh toán thất bại hoặc đơn hàng không tồn tại"}, status=400)
         else:
             print("[VNPay Callback] LỖI: Sai chữ ký!")
-            return Response({"message": "Sai chữ ký VNPay"}, status=400) 
+            return Response({"message": "Sai chữ ký VNPay"}, status=400)
 
+
+from .models import CancelReturnRequest
+from .serializers import CancelReturnRequestSerializer
+
+class CancelReturnRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        # Kiểm tra xem đã có request chưa
+        if CancelReturnRequest.objects.filter(order=order, status='pending').exists():
+            return Response({'error': 'Đã có yêu cầu đang được xử lý cho đơn hàng này.'}, status=400)
+            
+        data = request.data.copy()
+        data['order'] = order.id
+        serializer = CancelReturnRequestSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)

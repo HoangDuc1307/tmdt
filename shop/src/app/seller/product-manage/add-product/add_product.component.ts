@@ -103,12 +103,17 @@ export class AddProductComponent implements OnInit {
     this.message = '';
     this.error = '';
     const priceNumber = Number(this.product.price);
-    if (isNaN(priceNumber) || priceNumber <= 0) {
+    if (isNaN(priceNumber) || priceNumber <= 0 || this.product.price === '') {
       this.error = 'Giá sản phẩm phải là số dương!';
       return;
     }
     if (priceNumber > 9999999999) {
       this.error = 'Giá VND không được vượt quá 9.999.999.999!';
+      return;
+    }
+    const quantityNumber = Number(this.product.quantity);
+    if (isNaN(quantityNumber) || quantityNumber < 0 || this.product.quantity === '') {
+      this.error = 'Số lượng phải là số nguyên không âm!';
       return;
     }
     if (!this.product.category) {
@@ -119,8 +124,12 @@ export class AddProductComponent implements OnInit {
     const productToSend: any = {
       ...this.product,
       price: priceNumber,
+      quantity: quantityNumber,
       category_id: this.product.category
     };
+    if (!productToSend.image) {
+      productToSend.image = 'https://via.placeholder.com/150';
+    }
     delete productToSend.category;
     this.authService.createProduct(productToSend).subscribe({
       next: (res) => {

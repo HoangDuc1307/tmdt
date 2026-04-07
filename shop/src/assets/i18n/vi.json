@@ -1,0 +1,27 @@
+{
+  "SETTINGS": {
+    "TITLE": "Cài đặt hệ thống",
+    "LANGUAGE": "Ngôn ngữ",
+    "PROFILE": "Hồ sơ cá nhân",
+    "ADDRESS": "Sổ địa chỉ",
+    "ORDERS": "Lịch sử đơn hàng",
+    "PAYMENT": "Thanh toán",
+    "NOTIFICATIONS": "Thông báo",
+    "LOYALTY": "Thành viên",
+    "SAVE": "Lưu thay đổi",
+    "CANCEL": "Hủy"
+  },
+  "PROFILE": {
+    "BASIC_INFO": "Thông tin cơ bản",
+    "CONTACT": "Liên hệ",
+    "PASSWORD": "Đổi mật khẩu",
+    "FIRST_NAME": "Tên",
+    "LAST_NAME": "Họ",
+    "EMAIL": "Email",
+    "PHONE": "Số điện thoại",
+    "BIO": "Giới thiệu",
+    "DOB": "Ngày sinh",
+    "GENDER": "Giới tính",
+    "UPLOAD_AVATAR": "Tải ảnh đại diện"
+  }
+}

@@ -34,6 +34,9 @@ INSTALLED_APPS = [
     'apps.saleproduct',
     'apps.reviews',
     'apps.marketplace',
+    'apps.addresses',
+    'apps.notifications',
+    'apps.loyalty',
     'chatbot.apps.ChatbotConfig',
 ]
 

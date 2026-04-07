@@ -7,10 +7,12 @@ from django import forms
 
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('shipped', 'Shipped'),
-        ('delivered', 'Delivered'),
+        ('pending', 'Chờ xử lý'),
+        ('paid', 'Đã thanh toán'),
+        ('shipped', 'Đang giao'),
+        ('delivered', 'Đã giao'),
+        ('cancelled', 'Đã hủy'),
+        ('returned', 'Đã trả hàng'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -65,8 +67,26 @@ class OrderItem(models.Model):
         order.save()
 
     def __str__(self):
-        return f"{self.quantity} x {self.product.name} trong đơn #{self.order.id}" 
+        return f"{self.quantity} x {self.product.name} trong đơn #{self.order.id}"
 
 
+class CancelReturnRequest(models.Model):
+    TYPE_CHOICES = [
+        ('cancel', 'Hủy đơn'),
+        ('return', 'Trả hàng'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Đang chờ'),
+        ('approved', 'Đã duyệt'),
+        ('rejected', 'Từ chối'),
+    ]
 
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='cancel_requests')
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    reason = models.TextField()
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return f"[{self.type}] Đơn #{self.order.id} - {self.status}"

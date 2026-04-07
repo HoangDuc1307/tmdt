@@ -1,0 +1,107 @@
+<div class="settings-section">
+  <div class="section-header">
+    <h3 class="section-title">{{ 'SETTINGS.PROFILE' | translate }}</h3>
+    <p class="section-desc">Quản lý thông tin công khai và liên hệ của bạn.</p>
+  </div>
+
+  <div class="forms-container">
+    <!-- Basic Info Form -->
+    <div class="form-card">
+      <h4>{{ 'PROFILE.BASIC_INFO' | translate }}</h4>
+      <form [formGroup]="basicForm" (ngSubmit)="saveBasicInfo()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ 'PROFILE.FIRST_NAME' | translate }}</label>
+            <input type="text" formControlName="first_name" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>{{ 'PROFILE.LAST_NAME' | translate }}</label>
+            <input type="text" formControlName="last_name" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>{{ 'PROFILE.BIO' | translate }}</label>
+          <textarea formControlName="bio" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ 'PROFILE.DOB' | translate }}</label>
+            <input type="date" formControlName="date_of_birth" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>{{ 'PROFILE.GENDER' | translate }}</label>
+            <select formControlName="gender" class="form-control">
+              <option value="">Chọn giới tính</option>
+              <option value="male">Nam</option>
+              <option value="female">Nữ</option>
+              <option value="other">Khác</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <span class="success-msg" *ngIf="messageBasic">{{ messageBasic }}</span>
+          <button type="submit" class="btn btn-primary" [disabled]="basicForm.invalid || loadingBasic">
+            {{ 'SETTINGS.SAVE' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Contact Info Form -->
+    <div class="form-card">
+      <h4>{{ 'PROFILE.CONTACT' | translate }}</h4>
+      <form [formGroup]="contactForm" (ngSubmit)="saveContactInfo()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ 'PROFILE.EMAIL' | translate }}</label>
+            <input type="email" formControlName="email" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>{{ 'PROFILE.PHONE' | translate }}</label>
+            <input type="text" formControlName="phone" class="form-control">
+          </div>
+        </div>
+        <div class="form-actions">
+          <span class="success-msg" *ngIf="messageContact">{{ messageContact }}</span>
+          <button type="submit" class="btn btn-primary" [disabled]="contactForm.invalid || loadingContact">
+            {{ 'SETTINGS.SAVE' | translate }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Password Form -->
+    <div class="form-card">
+      <h4>{{ 'PROFILE.PASSWORD' | translate }}</h4>
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+        <div class="form-group">
+          <label>Mật khẩu hiện tại</label>
+          <input type="password" formControlName="old_password" class="form-control">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mật khẩu mới</label>
+            <input type="password" formControlName="new_password" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Xác nhận mật khẩu</label>
+            <input type="password" formControlName="confirm_password" class="form-control">
+          </div>
+        </div>
+        <div class="form-actions">
+          <span class="alert-msg" *ngIf="messagePassword">{{ messagePassword }}</span>
+          <button type="submit" class="btn btn-danger" [disabled]="passwordForm.invalid || loadingPassword">
+            Đổi mật khẩu
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

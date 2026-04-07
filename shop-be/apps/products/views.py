@@ -97,8 +97,11 @@ class ProductListAllView(APIView):
     permission_classes = [AllowAny]  # Allow any user to access this view
     
     def get(self, request):
-        if request.user.is_authenticated and request.user.is_staff:
+        user = self.request.user
+        if user.is_authenticated and user.is_staff:
             products = Product.objects.all().order_by('-id')
+        elif user.is_authenticated:
+            products = Product.objects.filter(models.Q(is_approved=True) | models.Q(seller=user)).order_by('-id')
         else:
             products = Product.objects.filter(is_approved=True).order_by('-id')
         serializer = ProductSerializer(products, many=True)
@@ -127,7 +130,7 @@ class RelatedProductsView(APIView):
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return Response({'detail': 'Product not found.'}, status=404)
-        related_products = Product.objects.filter(category=product.category, is_approved=True).exclude(id=product.id)
+        related_products = Product.objects.filter(category_id=product.category_id, is_approved=True).exclude(id=product.id)
         serializer = ProductSerializer(related_products, many=True)
         return Response(serializer.data)
     

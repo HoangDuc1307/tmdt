@@ -1,0 +1,50 @@
+<div class="settings-section">
+  <div class="section-header">
+    <h3 class="section-title">Khách Hàng Thân Thiết</h3>
+    <p class="section-desc">Quản lý điểm thưởng và hạng thành viên của bạn</p>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="!loading && account">
+    <!-- Tier Card -->
+    <div class="tier-card" [ngClass]="account.tier">
+      <div class="tier-info">
+        <h4 class="tier-name">{{ account.tier | uppercase }} MEMBER</h4>
+        <div class="points-display">
+          <span class="points-value">{{ account.points | number }}</span>
+          <span class="points-label">Điểm hiện có</span>
+        </div>
+      </div>
+      <div class="tier-icon">
+        <span *ngIf="account.tier === 'bronze'">🥉</span>
+        <span *ngIf="account.tier === 'silver'">🥈</span>
+        <span *ngIf="account.tier === 'gold'">🥇</span>
+        <span *ngIf="account.tier === 'platinum'">💎</span>
+      </div>
+    </div>
+
+    <!-- History List -->
+    <div class="history-section">
+      <h4>Lịch Sử Điểm</h4>
+      
+      <div class="empty-state" *ngIf="history.length === 0">
+        <p>Bạn chưa có lịch sử giao dịch điểm.</p>
+      </div>
+
+      <div class="history-list">
+        <div class="history-item" *ngFor="let item of history">
+          <div class="history-left">
+            <span class="history-desc">{{ item.description }}</span>
+            <span class="history-date">{{ item.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="history-right" [ngClass]="item.points_change > 0 ? 'positive' : 'negative'">
+            {{ item.points_change > 0 ? '+' : '' }}{{ item.points_change }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

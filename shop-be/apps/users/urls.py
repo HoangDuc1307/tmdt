@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     RegisterView, LogoutView, CreateAdminView,
     MyProfileView, AllUsersAdminView, AllUserProfilesAdminView,
-    LogoutAndBlacklistRefreshTokenForUserView
+    LogoutAndBlacklistRefreshTokenForUserView, ChangePasswordView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import CustomTokenObtainPairView
@@ -15,11 +15,9 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('create-admin/', CreateAdminView.as_view(), name='create-admin'),
     path('profile/', MyProfileView.as_view(), name='my-profile'),
+    path('change-password/', ChangePasswordView.as_view(), name='change-password'),
     path('admin/users/', AllUsersAdminView.as_view(), name='all-users-admin'),
     path('admin/userprofiles/', AllUserProfilesAdminView.as_view(), name='all-userprofiles-admin'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/blacklist/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='token_blacklist'),
 ]
-
-urlpatterns += [
-    path('logout/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='logout'),
-] 

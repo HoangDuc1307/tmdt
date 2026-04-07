@@ -60,6 +60,12 @@ export class AuthService {
     return this.http.put(`${this.apiUrl}/users/profile/`, data, { headers });
   }
 
+  // Đổi mật khẩu
+  changePassword(data: any): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${this.apiUrl}/users/change-password/`, data, { headers });
+  }
+
   // Tạo tài khoản admin
   createAdmin(data: any): Observable<any> {
     const headers = this.getAuthHeaders();
@@ -211,6 +217,11 @@ export class AuthService {
   deleteOrder(orderId: number): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.delete(`${this.apiUrl}/orders/${orderId}/`, { headers });
+  }
+
+  submitCancelReturnRequest(orderId: number, data: any): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${this.apiUrl}/orders/${orderId}/cancel-return/`, data, { headers });
   }
 
   payOrder(orderId: number): Observable<any> {

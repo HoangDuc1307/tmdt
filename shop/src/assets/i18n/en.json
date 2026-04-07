@@ -1,0 +1,27 @@
+{
+  "SETTINGS": {
+    "TITLE": "System Settings",
+    "LANGUAGE": "Language",
+    "PROFILE": "Profile",
+    "ADDRESS": "Address Book",
+    "ORDERS": "Order History",
+    "PAYMENT": "Payment",
+    "NOTIFICATIONS": "Notifications",
+    "LOYALTY": "Loyalty Program",
+    "SAVE": "Save Changes",
+    "CANCEL": "Cancel"
+  },
+  "PROFILE": {
+    "BASIC_INFO": "Basic Info",
+    "CONTACT": "Contact",
+    "PASSWORD": "Change Password",
+    "FIRST_NAME": "First Name",
+    "LAST_NAME": "Last Name",
+    "EMAIL": "Email",
+    "PHONE": "Phone Number",
+    "BIO": "Bio",
+    "DOB": "Date of Birth",
+    "GENDER": "Gender",
+    "UPLOAD_AVATAR": "Upload Avatar"
+  }
+}

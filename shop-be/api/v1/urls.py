@@ -7,5 +7,9 @@ urlpatterns = [
     path('cart/', include('apps.cart.urls')),
     path('orders/', include('apps.orders.urls')),
     path('vnpay/return/', VNPayReturnView.as_view(), name='vnpay-return'),
-    path('',include('apps.saleproduct.urls'))
-] 
+    path('', include('apps.saleproduct.urls')),
+    # Settings API
+    path('addresses/', include('apps.addresses.urls')),
+    path('notifications/', include('apps.notifications.urls')),
+    path('loyalty/', include('apps.loyalty.urls')),
+]

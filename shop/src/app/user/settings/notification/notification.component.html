@@ -1,0 +1,115 @@
+<div class="settings-section">
+  <div class="section-header type-flex">
+    <div>
+      <h3 class="section-title">Trung Tâm Thông Báo</h3>
+      <p class="section-desc">Quản lý nhận thông báo qua email và hệ thống</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'list'" (click)="activeTab = 'list'">Hộp thư đến</button>
+    <button class="tab-btn" [class.active]="activeTab === 'prefs'" (click)="activeTab = 'prefs'">Cài đặt thông báo</button>
+  </div>
+
+  <!-- Tab 1: Danh sách thông báo -->
+  <div class="tab-content" *ngIf="activeTab === 'list'">
+    <div class="list-actions" *ngIf="notifications.length > 0">
+      <button class="btn-text" (click)="markAllAsRead()">Đánh dấu tất cả đã đọc</button>
+    </div>
+
+    <div class="empty-state" *ngIf="notifications.length === 0">
+      <p>Bạn không có thông báo nào.</p>
+    </div>
+
+    <div class="notification-list">
+      <div class="notif-item" *ngFor="let notif of notifications" 
+           [class.unread]="!notif.is_read" 
+           (click)="markAsRead(notif.id)">
+        <div class="notif-icon">
+          <span *ngIf="notif.type === 'order'">📦</span>
+          <span *ngIf="notif.type === 'promo'">🎉</span>
+          <span *ngIf="notif.type === 'system'">⚙️</span>
+          <span *ngIf="notif.type === 'loyalty'">⭐</span>
+        </div>
+        <div class="notif-content">
+          <h4>{{ notif.title }}</h4>
+          <p>{{ notif.message }}</p>
+          <span class="notif-time">{{ notif.created_at | date:'short' }}</span>
+        </div>
+        <div class="notif-actions">
+          <div class="unread-dot" *ngIf="!notif.is_read"></div>
+          <button class="btn-icon" (click)="deleteNotification(notif.id, $event)">✕</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Cấu hình thông báo -->
+  <div class="tab-content" *ngIf="activeTab === 'prefs'">
+    <div class="settings-card">
+      <h4 class="card-title">Thông báo Email</h4>
+      <div class="setting-item">
+        <div class="setting-info">
+          <h5>Cập nhật đơn hàng</h5>
+          <p>Nhận email khi đơn hàng của bạn thay đổi trạng thái.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" [checked]="preferences.email_orders" (change)="togglePref('email_orders')">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h5>Khuyến mãi & Tin tức</h5>
+          <p>Nhận email về mã giảm giá và các sự kiện hấp dẫn.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" [checked]="preferences.email_promotions" (change)="togglePref('email_promotions')">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h5>Bảo mật & Tài khoản</h5>
+          <p>Nhận email cảnh báo đăng nhập lạ, đổi mật khẩu.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" [checked]="preferences.email_security" (change)="togglePref('email_security')">
+          <span class="slider round"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h4 class="card-title">Thông báo Ứng Dụng (Push)</h4>
+      <div class="setting-item">
+        <div class="setting-info">
+          <h5>Cập nhật đơn hàng</h5>
+          <p>Nhận thông báo trực tiếp trên website/app.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" [checked]="preferences.push_orders" (change)="togglePref('push_orders')">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h5>Khuyến mãi</h5>
+          <p>Nhận thông báo mã giảm giá mới ngay lập tức.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" [checked]="preferences.push_promotions" (change)="togglePref('push_promotions')">
+          <span class="slider round"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="savePreferences()">Lưu Cấu Hình</button>
+    </div>
+  </div>
+
+</div>

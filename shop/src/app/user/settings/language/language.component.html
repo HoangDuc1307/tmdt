@@ -1,0 +1,17 @@
+<div class="settings-section">
+  <div class="section-header">
+    <h3 class="section-title">{{ 'SETTINGS.LANGUAGE' | translate }}</h3>
+    <p class="section-desc">Chọn ngôn ngữ hiển thị cho website.</p>
+  </div>
+
+  <div class="language-options">
+    <button *ngFor="let lang of languages" 
+            class="lang-btn" 
+            [class.active]="languageService.currentLang() === lang.code"
+            (click)="setLanguage(lang.code)">
+      <span class="lang-icon">{{ lang.icon }}</span>
+      <span class="lang-name">{{ lang.name }}</span>
+      <span class="check-icon" *ngIf="languageService.currentLang() === lang.code">✓</span>
+    </button>
+  </div>
+</div>

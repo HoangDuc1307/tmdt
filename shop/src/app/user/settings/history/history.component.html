@@ -1,0 +1,83 @@
+<div class="settings-section">
+  <div class="section-header">
+    <h3 class="section-title">Lịch Sử Đơn Hàng</h3>
+    <p class="section-desc">Theo dõi tất cả giao dịch và quản lý yêu cầu hoàn trả</p>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <p>Đang tải lịch sử đơn hàng...</p>
+  </div>
+
+  <div class="orders-list" *ngIf="!loading">
+    <div class="empty-state" *ngIf="orders.length === 0">
+      <p>Bạn chưa có đơn hàng nào.</p>
+    </div>
+
+    <!-- Order Item -->
+    <div class="order-card" *ngFor="let order of orders">
+      <div class="order-header">
+        <div class="order-meta">
+          <span class="order-id">Đơn hàng #{{ order.id }}</span>
+          <span class="order-date">{{ order.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+        <div class="order-status badge" [ngClass]="getStatusBadgeClass(order.status)">
+          {{ getStatusLabel(order.status) }}
+        </div>
+      </div>
+
+      <div class="order-body">
+        <!-- Render 1 or 2 products as preview -->
+        <div class="product-preview" *ngFor="let item of order.items.slice(0, 2)">
+          <div class="prod-info">
+            <span class="prod-qty">{{ item.quantity }}x</span>
+            <span class="prod-name">{{ item.product_name }}</span>
+          </div>
+          <span class="prod-price">{{ item.price | number:'1.0-0' }}đ</span>
+        </div>
+        <div *ngIf="order.items.length > 2" class="more-items">
+          ...và {{ order.items.length - 2 }} sản phẩm khác
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <div class="order-total">
+          <span>Tổng tiền:</span>
+          <strong>{{ order.total_price | number:'1.0-0' }}đ</strong>
+        </div>
+        <div class="order-actions">
+          <button class="btn btn-outline-danger" 
+                  *ngIf="order.status !== 'canceled'" 
+                  (click)="openCancelModal(order)">
+            {{ order.status === 'pending' ? 'Hủy đơn' : 'Yêu cầu Trả hàng' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel/Return Modal -->
+  <div class="modal-overlay" *ngIf="showCancelModal">
+    <div class="modal-content">
+      <h4>{{ cancelForm.get('type')?.value === 'cancel' ? 'Hủy Đơn Hàng' : 'Yêu Cầu Hoàn Trả' }}</h4>
+      <p>Đơn hàng: #{{ selectedOrder?.id }}</p>
+
+      <form [formGroup]="cancelForm" (ngSubmit)="submitCancel()">
+        <div class="form-group" style="display: none;">
+          <input type="text" formControlName="type">
+        </div>
+        
+        <div class="form-group">
+          <label>Lý do</label>
+          <textarea formControlName="reason" class="form-control" rows="4" placeholder="Vui lòng nhập lý do chi tiết..."></textarea>
+        </div>
+
+        <div class="modal-alert" *ngIf="message">{{ message }}</div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" (click)="closeCancelModal()">Đóng</button>
+          <button type="submit" class="btn btn-danger" [disabled]="cancelForm.invalid">Gửi Yêu Cầu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

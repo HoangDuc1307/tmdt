@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.authtoken.models import Token
 from .models import UserProfile
-from .serializers import UserSerializer, UserProfileSerializer
+from .serializers import UserSerializer, UserProfileSerializer, ChangePasswordSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 
@@ -52,7 +52,6 @@ class LoginView(APIView):
             return Response({"error": "Username không tồn tại"}, status=status.HTTP_400_BAD_REQUEST)
         
         if user.check_password(password):
-            # Tạo hoặc lấy token cho user
             token, created = Token.objects.get_or_create(user=user)
             
             return Response({
@@ -74,7 +73,6 @@ class LogoutView(APIView):
     
     def post(self, request):
         try:
-            # Xóa token của user hiện tại
             request.user.auth_token.delete()
             return Response({"message": "Đăng xuất thành công"}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -102,7 +100,6 @@ class CreateAdminView(APIView):
         user.set_password(password)
         user.save()
         
-        # Tạo token cho admin
         token, created = Token.objects.get_or_create(user=user)
         
         return Response({
@@ -137,11 +134,31 @@ class MyProfileView(APIView):
 
     def put(self, request):
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
-        serializer = UserProfileSerializer(profile, data=request.data)
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request):
+        return self.put(request)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        if not user.check_password(serializer.validated_data['old_password']):
+            return Response({'error': 'Mật khẩu hiện tại không đúng.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        return Response({'message': 'Đổi mật khẩu thành công.'}, status=status.HTTP_200_OK)
 
 
 class AllUsersAdminView(APIView):
@@ -159,7 +176,7 @@ class AllUserProfilesAdminView(APIView):
     def get(self, request):
         profiles = UserProfile.objects.all()
         serializer = UserProfileSerializer(profiles, many=True)
-        return Response(serializer.data) 
+        return Response(serializer.data)
 
 
 class LogoutAndBlacklistRefreshTokenForUserView(APIView):
@@ -170,8 +187,8 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST) 
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer 
+    serializer_class = CustomTokenObtainPairSerializer

@@ -1,0 +1,25 @@
+<div class="settings-layout">
+  <!-- Sidebar -->
+  <aside class="settings-sidebar">
+    <div class="sidebar-header">
+      <h2>{{ 'SETTINGS.TITLE' | translate }}</h2>
+    </div>
+    
+    <nav class="settings-nav">
+      <a *ngFor="let item of menuItems" 
+         [routerLink]="['/settings', item.path]" 
+         routerLinkActive="active"
+         class="nav-item">
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-label">{{ item.labelKey | translate }}</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="settings-content">
+    <div class="content-card">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>

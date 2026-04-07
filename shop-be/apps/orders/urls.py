@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     CheckoutView, PayOrderView, OrderListView, OrderDetailView,
     UpdateOrderInfoView, AllOrdersAdminView, AdminOrderDetailView,
-    VNPayPaymentView, VNPayReturnView
+    VNPayPaymentView, VNPayReturnView, CancelReturnRequestView
 )
 
 app_name = 'orders'
@@ -16,6 +16,5 @@ urlpatterns = [
     path('<int:order_id>/vnpay/', VNPayPaymentView.as_view(), name='vnpay-payment'),
     path('admin/orders/', AllOrdersAdminView.as_view(), name='all-orders-admin'),
     path('admin/orders/<int:pk>/', AdminOrderDetailView.as_view(), name='admin-order-detail'),
-
-
-] 
+    path('<int:order_id>/cancel-return/', CancelReturnRequestView.as_view(), name='cancel-return'),
+]

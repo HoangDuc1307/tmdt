@@ -29,6 +29,16 @@ import { ReportsManagementComponent } from './admin/pages/reports-management/rep
 import { FeesStatisticsComponent } from './admin/pages/fees-statistics/fees-statistics.component';
 import { UserDetailComponent } from './admin/pages/users-management/user-details/user-details.component';
 
+// Settings Components
+import { SettingsShellComponent } from './user/settings/settings-shell/settings-shell.component';
+import { ProfileComponent } from './user/settings/profile/profile.component';
+import { LanguageComponent } from './user/settings/language/language.component';
+import { AddressComponent } from './user/settings/address/address.component';
+import { HistoryComponent } from './user/settings/history/history.component';
+import { PaymentComponent } from './user/settings/payment/payment.component';
+import { NotificationComponent } from './user/settings/notification/notification.component';
+import { LoyaltyComponent } from './user/settings/loyalty/loyalty.component';
+
 const adminSystemGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
@@ -73,5 +83,21 @@ export const routes: Routes = [
       { path: 'fees', component: FeesStatisticsComponent },
       { path: 'users/:id', component: UserDetailComponent },
     ],
+  },
+
+  // System Settings Shell
+  {
+    path: 'settings',
+    component: SettingsShellComponent,
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'profile' },
+      { path: 'profile', component: ProfileComponent },
+      { path: 'language', component: LanguageComponent },
+      { path: 'address', component: AddressComponent },
+      { path: 'history', component: HistoryComponent },
+      { path: 'payment', component: PaymentComponent },
+      { path: 'notification', component: NotificationComponent },
+      { path: 'loyalty', component: LoyaltyComponent },
+    ]
   },
 ];

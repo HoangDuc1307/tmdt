@@ -61,4 +61,12 @@ class OrderSerializer(serializers.ModelSerializer):
 class OrderUpdateInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['receiver_name', 'address', 'phone', 'email'] 
+        fields = ['receiver_name', 'address', 'phone', 'email']
+
+from .models import CancelReturnRequest
+
+class CancelReturnRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CancelReturnRequest
+        fields = ['id', 'order', 'type', 'reason', 'status', 'created_at']
+        read_only_fields = ['id', 'status', 'created_at']

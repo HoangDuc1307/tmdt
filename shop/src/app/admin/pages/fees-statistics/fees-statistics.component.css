@@ -51,3 +51,44 @@
     border-radius: 6px;
     border-left: 3px solid var(--success);
 }
+
+.fee-config-card {
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.03), rgba(37, 99, 235, 0.01));
+}
+
+.filter-actions-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #fff;
+}
+
+.time-filter-select {
+    min-width: 190px;
+}
+
+.action-btn {
+    min-width: 150px;
+}
+
+.fee-config-input-group {
+    width: auto;
+    min-width: 360px;
+}
+
+.fee-config-input-group input {
+    max-width: 120px;
+}
+
+@media (max-width: 768px) {
+    .time-filter-select {
+        min-width: 100%;
+    }
+
+    .action-btn {
+        width: 100%;
+    }
+
+    .fee-config-input-group {
+        min-width: 100%;
+    }
+}

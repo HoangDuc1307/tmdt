@@ -1,25 +1,66 @@
 <div class="dashboard-page-content" data-animated-id="1">
-    <div class="row mb-9 align-items-center justify-content-between">
-        <div class="col-sm-6 mb-8 mb-sm-0">
+    <div class="row mb-5 align-items-center justify-content-between">
+        <div class="col-sm-6 mb-3 mb-sm-0">
             <h2 class="fs-4 mb-0">Thống kê phí sàn</h2>
             <p class="mb-0">Báo cáo doanh thu và phí sàn thu từ giao dịch.</p>
-        </div>
-        <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end gap-2">
-            <select id="feesChartDays" name="chartDays" class="form-select w-auto"
-                [ngModel]="chartDays" (ngModelChange)="chartDays=$event; onChartDaysChange()">
-                <option [value]="7">7 ngày</option>
-                <option [value]="14">14 ngày</option>
-                <option [value]="30">30 ngày</option>
-            </select>
-            <button class="btn btn-primary" (click)="load()" [disabled]="loading"><i class="fas fa-sync-alt me-1"></i> Làm mới</button>
-            <button class="btn btn-primary" (click)="saveReport()" [disabled]="loading || savingReport || !stats">
-                <i class="fas fa-save me-1" *ngIf="!savingReport"></i>
-                <span class="d-inline-block">{{ savingReport ? 'Đang lưu...' : 'Lưu báo cáo' }}</span>
-            </button>
         </div>
     </div>
 
     <p *ngIf="saveMessage" class="alert alert-success mt-2">✅ {{ saveMessage }}</p>
+
+    <div class="card rounded-4 p-4 mb-4 filter-actions-card">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <label for="feesChartDays" class="mb-0 fw-semibold text-muted">Khoảng thời gian</label>
+                <select id="feesChartDays" name="chartDays" class="form-select time-filter-select"
+                    [ngModel]="chartDays" (ngModelChange)="chartDays=$event; onChartDaysChange()">
+                    <option [value]="7">7 ngày gần nhất</option>
+                    <option [value]="14">14 ngày gần nhất</option>
+                    <option [value]="30">30 ngày gần nhất</option>
+                </select>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-primary action-btn" (click)="load()" [disabled]="loading">
+                    <i class="fas fa-sync-alt me-1"></i> Làm mới dữ liệu
+                </button>
+                <button class="btn btn-primary action-btn" (click)="saveReport()" [disabled]="loading || savingReport || !stats">
+                    <i class="fas fa-save me-1" *ngIf="!savingReport"></i>
+                    <span class="d-inline-block">{{ savingReport ? 'Đang lưu...' : 'Lưu báo cáo Excel' }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card rounded-4 p-4 mb-6 fee-config-card">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <h6 class="mb-1"><i class="fas fa-sliders-h me-2 text-primary"></i>Cấu hình phí sàn</h6>
+                <p class="text-muted mb-0">Mức hiện tại: <strong>{{ platformFeePercent }}%</strong></p>
+            </div>
+            <div class="input-group fee-config-input-group">
+                <span class="input-group-text">Phí sàn (%)</span>
+                <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    class="form-control"
+                    [ngModel]="newPlatformFeePercent"
+                    (ngModelChange)="newPlatformFeePercent = $event"
+                />
+                <button
+                    class="btn btn-primary"
+                    (click)="updatePlatformFeePercent()"
+                    [disabled]="loading || updatingFeeConfig"
+                >
+                    {{ updatingFeeConfig ? 'Đang cập nhật...' : 'Thay đổi phí sàn' }}
+                </button>
+            </div>
+        </div>
+        <p class="text-muted small mt-2 mb-0">
+            Sau khi cập nhật, hệ thống sẽ tải lại thống kê theo mức phí mới.
+        </p>
+    </div>
 
     <!-- Stats row 1 -->
     <div class="row" *ngIf="stats">

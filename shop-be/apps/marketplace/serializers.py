@@ -2,26 +2,52 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from .models import Listing, UserReport, Transaction, UserProfile, ReportEvidence, ListingImage
+from apps.products.models import Product
 
 
 # Xử lý ảnh bài đăng
 class ListingImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = ListingImage
         fields = ['id', 'image', 'uploaded_at']
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if not obj.image:
+            return None
+        if request is not None:
+            return request.build_absolute_uri(obj.image.url)
+        return obj.image.url
 
 
 # Chuyển đổi thông tin bài đăng để Admin duyệt
 class ListingSerializer(serializers.ModelSerializer):
     seller_username = serializers.CharField(source='seller.username', read_only=True)
     images = ListingImageSerializer(many=True, read_only=True)
+    product_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Listing
         fields = [
             'id', 'title', 'description', 'price', 'status', 
-            'seller_username', 'reject_reason', 'images', 'created_at'
+            'seller_username', 'reject_reason', 'images', 'product_image', 'created_at'
         ]
+
+    def get_product_image(self, obj):
+        # Fallback: listing hiện chưa lưu ListingImage khi sync từ Product
+        # nên dùng ảnh sản phẩm tương ứng để admin vẫn duyệt được bằng hình.
+        product = Product.objects.filter(seller=obj.seller, name=obj.title).order_by('-created_at').first()
+        if not product or not product.image:
+            return None
+        request = self.context.get('request')
+        image = str(product.image)
+        if image.startswith('http'):
+            return image
+        if request is not None:
+            return request.build_absolute_uri(image)
+        return image
 
 
 # Thông tin User - Gom cả số gậy (cảnh báo) và lý do khóa từ Profile vào cho dễ quản lý
@@ -43,9 +69,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 # Xử lý ảnh bằng chứng trong báo cáo
 class ReportEvidenceSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = ReportEvidence
         fields = ['id', 'image', 'uploaded_at']
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if not obj.image:
+            return None
+        if request is not None:
+            return request.build_absolute_uri(obj.image.url)
+        return obj.image.url
 
 # Đổ dữ liệu tố cáo người dùng
 class UserReportSerializer(serializers.ModelSerializer):

@@ -1,14 +1,19 @@
 <div class="dashboard-page-content" data-animated-id="1">
-    <div class="row mb-9 align-items-center justify-content-between">
-        <div class="col-sm-6 mb-8 mb-sm-0">
+    <div class="row mb-5 align-items-center justify-content-between">
+        <div class="col-sm-6 mb-3 mb-sm-0">
             <h2 class="fs-4 mb-0">Duyệt bài đăng</h2>
             <p class="mb-0">Phê duyệt hoặc từ chối tin đăng của người dùng.</p>
         </div>
-        <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end gap-2">
-            <input id="listingSearch" name="search" class="form-control w-auto" type="text"
+    </div>
+
+    <div class="card rounded-4 p-4 mb-4 filter-actions-card">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <input id="listingSearch" name="search" class="form-control listing-search-input" type="text"
                    placeholder="🔍 Tìm theo tiêu đề..."
                    [ngModel]="search()" (ngModelChange)="search.set($event)" />
-            <button class="btn btn-primary" (click)="load()" [disabled]="loading()">🔄 Làm mới</button>
+            <button class="btn btn-outline-primary action-btn" (click)="load()" [disabled]="loading()">
+                <i class="fas fa-sync-alt me-1"></i> Làm mới dữ liệu
+            </button>
         </div>
     </div>
 
@@ -157,11 +162,19 @@
                         </div>
 
                         <h6 class="fw-bold mt-4 mb-2">Hình ảnh sản phẩm:</h6>
-                        <div class="d-flex flex-wrap gap-2 mb-3" *ngIf="currentListing()?.images?.length; else noImage">
+                        <div class="d-flex flex-wrap gap-2 mb-3" *ngIf="currentListing()?.images?.length; else noListingImage">
                             <a *ngFor="let img of currentListing()?.images" [href]="img.image" target="_blank" class="border rounded p-1 d-inline-block bg-white shadow-sm">
                                 <img [src]="img.image" alt="Listing Image" style="max-height: 80px; max-width: 120px; object-fit: cover; border-radius: 4px;">
                             </a>
                         </div>
+                        <ng-template #noListingImage>
+                            <div *ngIf="currentListing()?.product_image; else noImage" class="d-flex flex-wrap gap-2 mb-3">
+                                <a [href]="currentListing()?.product_image" target="_blank" class="border rounded p-1 d-inline-block bg-white shadow-sm">
+                                    <img [src]="currentListing()?.product_image" alt="Product Image" style="max-height: 80px; max-width: 120px; object-fit: cover; border-radius: 4px;">
+                                </a>
+                                <span class="text-muted fst-italic fs-14px align-self-end">(Ảnh lấy từ sản phẩm đã đăng)</span>
+                            </div>
+                        </ng-template>
                         <ng-template #noImage>
                             <div class="text-muted fst-italic mb-3 fs-14px">Không có hình ảnh đính kèm.</div>
                         </ng-template>

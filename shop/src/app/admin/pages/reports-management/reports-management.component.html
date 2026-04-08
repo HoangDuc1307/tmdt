@@ -1,16 +1,13 @@
 <div class="dashboard-page-content" data-animated-id="1">
-    <div class="row mb-9 align-items-center justify-content-between">
-        <div class="col-sm-6 mb-8 mb-sm-0">
+    <div class="row mb-5 align-items-center justify-content-between">
+        <div class="col-sm-6 mb-3 mb-sm-0">
             <h2 class="fs-4 mb-0">Quản lý báo cáo</h2>
             <p class="mb-0">Tiếp nhận và giải quyết các khiếu nại từ người dùng.</p>
-        </div>
-        <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end gap-2">
-            <button class="btn btn-primary" (click)="load()" [disabled]="loading()"><i class="fas fa-sync-alt me-1"></i> Làm mới</button>
         </div>
     </div>
 
     <!-- Toolbar -->
-    <div class="card mb-4 rounded-4 p-4">
+    <div class="card mb-4 rounded-4 p-4 filter-actions-card">
         <div class="row g-3 align-items-center">
             <div class="col-md-3">
                 <select id="reportStatusFilter" name="statusFilter" class="form-select" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
@@ -28,6 +25,11 @@
                 <input id="reportSearch" name="search" class="form-control" type="text"
                     placeholder="🔍 Tìm người báo cáo, lý do..."
                     [ngModel]="search()" (ngModelChange)="search.set($event)" />
+            </div>
+            <div class="col-md-3 d-flex justify-content-md-end">
+                <button class="btn btn-outline-primary action-btn w-100" (click)="load()" [disabled]="loading()">
+                    <i class="fas fa-sync-alt me-1"></i> Làm mới dữ liệu
+                </button>
             </div>
         </div>
     </div>

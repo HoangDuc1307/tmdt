@@ -287,6 +287,40 @@ class VNPayReturnView(APIView):
             print("[VNPay Callback] LỖI: Sai chữ ký!")
             return Response({"message": "Sai chữ ký VNPay"}, status=400) 
 
+
+@method_decorator(csrf_exempt, name='dispatch')
+class VNPayIPNView(APIView):
+    """
+    IPN: VNPay gọi server-to-server để xác nhận giao dịch.
+    Trả format {RspCode, Message} để VNPay kết thúc/retry.
+    """
+
+    def get(self, request):
+        params = request.query_params.dict()
+        if not params:
+            return Response({"RspCode": "99", "Message": "No params"}, status=200)
+
+        vnp_secure_hash = params.pop('vnp_SecureHash', None)
+
+        sorted_params = sorted((k, v) for k, v in params.items() if k.startswith('vnp_'))
+        hash_data = '&'.join([f"{k}={v}" for k, v in sorted_params])
+        hash_secret = VNPAY_CONFIG["vnp_HashSecret"]
+        secure_hash = hmac.new(hash_secret.encode('utf-8'), hash_data.encode('utf-8'), hashlib.sha512).hexdigest()
+
+        if not vnp_secure_hash or secure_hash != vnp_secure_hash:
+            return Response({"RspCode": "97", "Message": "Invalid signature"}, status=200)
+
+        order_id = params.get('vnp_TxnRef')
+        order = Order.objects.filter(id=order_id).first()
+        if not order:
+            return Response({"RspCode": "01", "Message": "Order not found"}, status=200)
+
+        if params.get('vnp_ResponseCode') == '00' and order.status != 'paid':
+            order.status = 'paid'
+            order.save()
+
+        return Response({"RspCode": "00", "Message": "Confirm Success"}, status=200)
+
 # --- PHẦN DÀNH CHO SHIPPER ---
 
 class ShipperOrderListView(generics.ListAPIView):

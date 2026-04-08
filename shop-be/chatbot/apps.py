@@ -7,8 +7,8 @@ class ChatbotConfig(AppConfig):
     name = 'chatbot'
 
     def ready(self):
-        # Chỉ preload khi chạy runserver
-        if 'runserver' in sys.argv:
-            from .chat_utils import prepare_knowledge_base_sync, fetch_data_from_database
+        # Chỉ preload RAG khi chạy runserver (prepare_knowledge_base_sync đã gọi fetch DB bên trong)
+        if "runserver" in sys.argv:
+            from .chat_utils import prepare_knowledge_base_sync
+
             prepare_knowledge_base_sync()
-            fetch_data_from_database()

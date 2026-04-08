@@ -10,6 +10,6 @@ urlpatterns = [
     path('vnpay/return/', VNPayReturnView.as_view(), name='vnpay-return'),
     path('vnpay/ipn/', VNPayIPNView.as_view(), name='vnpay-ipn'),
     path('reports/user/', CreateUserReportView.as_view(), name='user-report-create'),
-    path('',include('apps.saleproduct.urls'))
+    path('', include('apps.saleproduct.urls')),
     path('chat/', include('apps.chat.urls')),
 ] 

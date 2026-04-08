@@ -31,7 +31,7 @@
 												<ul class="list-unstyled mb-0">
 													<li *ngIf="authService.isLoggedIn() && authService.isAdmin()"
 														class="admin-manage-item">
-														<a href="#" (click)="goToAdminManage($event)"
+														<a href="#" (click)="goToAdminManage()"
 															class="admin-manage-link">
 															ADMIN MANAGE
 														</a>
@@ -73,71 +73,8 @@
 					<a href="/" class="navbar-brand px-8 py-4 mx-auto text-decoration-none d-flex align-items-center">
 						<span class="light-mode-img fw-bold ls-1 fs-5 text-body-emphasis">Tiệm Tái Sinh</span>
 						<span class="dark-mode-img fw-bold ls-1 fs-5 text-body-emphasis">Tiệm Tái Sinh</span>
- 
-	<div class="sticky-area">
-		<div class="main-header nav navbar bg-body navbar-light navbar-expand-xl py-6 py-xl-0">
-			<div class="container-wide container flex-nowrap">
-				<div class="w-72px d-flex d-xl-none">
-					 <li class="breadcrumb-item active" aria-current="page">{{ authService.isLoggedIn() ? authService.getUsername() : 'User' }}</li>
-				</div>
-				<div class="d-none d-xl-flex w-xl-50">
-					<ul class="navbar-nav">
-						<!-- ... menu ... (cắt bớt cho ngắn, bạn có thể thêm lại đầy đủ nếu muốn) -->
-						<li class="nav-item transition-all-xl-1 py-11 me-xxl-12 me-xl-10 dropdown dropdown-hover dropdown-fullwidth">
-							<a class="nav-link d-flex justify-content-between position-relative py-0 px-0 text-uppercase fw-semibold ls-1 fs-14px dropdown-toggle"
-		   href="index.html" data-bs-toggle="dropdown" id="menu-item-home" aria-haspopup="true" aria-expanded="false">Hello
-		   <!-- Hiển thị username nếu đã đăng nhập, ngược lại hiển thị "User" -->
-		   {{ authService.isLoggedIn() ? authService.getUsername() : 'User' }}
-		   </a>
-		   <div class="dropdown-menu mega-menu start-0 py-6 "
-				 aria-labelledby="menu-item-home"
-				 style="width:320px">
-				<div class="megamenu-home container py-8 px-12">
-					<div class="row">
-		<div class="col">
-			
-			<ul class="list-unstyled mb-0">
-				<li *ngIf="authService.isLoggedIn() && authService.isAdmin()" class="admin-manage-item">
-					<a href="#" (click)="goToAdminManage()" class="admin-manage-link">
-						ADMIN MANAGE
- 
 					</a>
-				</li>
-				<li *ngIf="!authService.isLoggedIn()">
-					<a href="login" class="border-hover text-decoration-none py-3 d-block"><span class="border-hover-target">LOGIN</span></a>
-				</li>
-				<li *ngIf="authService.isLoggedIn()">
-					<a href="#" (click)="logout()" class="border-hover text-decoration-none py-3 d-block"><span class="border-hover-target">LOGOUT</span></a>
-				</li>
-			</ul>
-			
-		</div>
-		<div class="col">
-			<!-- Hiển thị Register nếu chưa đăng nhập -->
-			<ul class="list-unstyled" *ngIf="!authService.isLoggedIn()">
-				<li><a href="register" class="border-hover text-decoration-none py-3 d-block"><span class="border-hover-target">REGISTER</span></a></li>
-			</ul>	
-		</div>
-					</div>
-				</div>
-			</div>	
-			
-			
-					</ul>
-				</div>
-				<a href="/" class="navbar-brand px-8 py-4 mx-auto text-decoration-none d-flex align-items-center">
-					<span class="light-mode-img fw-bold ls-1 fs-5 text-body-emphasis">Tiệm Tái Sinh</span>
-					<span class="dark-mode-img fw-bold ls-1 fs-5 text-body-emphasis">Tiệm Tái Sinh</span>
-				</a>
-				<div class="icons-actions d-flex justify-content-end w-xl-50 fs-28px text-body-emphasis">
-					<!-- ... icons ... (cắt bớt cho ngắn, bạn có thể thêm lại đầy đủ nếu muốn) -->
-					<div class="px-xl-5 d-inline-block">
-						<a class="lh-1 color-inherit text-decoration-none" href="#" data-bs-toggle="offcanvas" data-bs-target="#searchModal" aria-controls="searchModal" aria-expanded="false">
-							<svg class="icon icon-magnifying-glass-light">
-								<use xlink:href="#icon-magnifying-glass-light"></use>
-							</svg>
-						</a>
-					</div>
+					<div class="icons-actions d-flex justify-content-end w-xl-50 fs-28px text-body-emphasis">
 <div class="px-5 d-none d-xl-inline-block">
   <a class="lh-1 color-inherit text-decoration-none" href="#"
 	 (click)="onUserIconClick(); $event.preventDefault();"
@@ -148,22 +85,11 @@
 	</svg>
   </a>
 </div>
-<div class="px-5 d-none d-xl-inline-block" *ngIf="authService.isLoggedIn()">
-    <div class="position-relative" (click)="toggleChat()" style="cursor: pointer;">
-        <i class="bi bi-chat-left-dots" style="font-size: 24px;"></i>
-        <span class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle mt-2 rounded-circle fs-10px p-0 square" style="--square-size: 16px">1</span>
-    </div>
+<div class="px d-none d-xl-inline-block" *ngIf="authService.isLoggedIn()">
+   
 
-    <div *ngIf="isChatOpen" 
-         style="position: fixed; bottom: 80px; right: 20px; width: 350px; height: 450px; z-index: 999999; background: white; border: 1px solid #ddd; box-shadow: 0 5px 25px rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden;">
-        
-        <div style="background: #f8f9fa; padding: 5px; text-align: right; border-bottom: 1px solid #eee;">
-            <button (click)="isChatOpen = false" class="btn btn-sm btn-light">X</button>
-        </div>
-
-        <app-chat></app-chat>
-    </div>
-</div>
+    
+</div><!-- end chat wrapper -->
 <div class="px-5 d-none d-xl-inline-block">
   <a class="position-relative lh-1 color-inherit text-decoration-none" href="#"
 	 (click)="onCartIconClick(); $event.preventDefault();"

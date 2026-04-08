@@ -1,8 +1,9 @@
 <header id="header" class="header header-sticky header-sticky-smart disable-transition-all z-index-5">
 	<div class="topbar bg-primary">
-
+		
 	</div>
 	<div class="sticky-area-wrap" style="height: 77.1667px;">
+ 
 		<div class="sticky-area">
 			<div class="main-header nav navbar bg-body navbar-light navbar-expand-xl py-6 py-xl-0">
 				<div class="container-wide container flex-nowrap">
@@ -72,142 +73,180 @@
 					<a href="/" class="navbar-brand px-8 py-4 mx-auto text-decoration-none d-flex align-items-center">
 						<span class="light-mode-img fw-bold ls-1 fs-5 text-body-emphasis">Tiệm Tái Sinh</span>
 						<span class="dark-mode-img fw-bold ls-1 fs-5 text-body-emphasis">Tiệm Tái Sinh</span>
+ 
+	<div class="sticky-area">
+		<div class="main-header nav navbar bg-body navbar-light navbar-expand-xl py-6 py-xl-0">
+			<div class="container-wide container flex-nowrap">
+				<div class="w-72px d-flex d-xl-none">
+					 <li class="breadcrumb-item active" aria-current="page">{{ authService.isLoggedIn() ? authService.getUsername() : 'User' }}</li>
+				</div>
+				<div class="d-none d-xl-flex w-xl-50">
+					<ul class="navbar-nav">
+						<!-- ... menu ... (cắt bớt cho ngắn, bạn có thể thêm lại đầy đủ nếu muốn) -->
+						<li class="nav-item transition-all-xl-1 py-11 me-xxl-12 me-xl-10 dropdown dropdown-hover dropdown-fullwidth">
+							<a class="nav-link d-flex justify-content-between position-relative py-0 px-0 text-uppercase fw-semibold ls-1 fs-14px dropdown-toggle"
+		   href="index.html" data-bs-toggle="dropdown" id="menu-item-home" aria-haspopup="true" aria-expanded="false">Hello
+		   <!-- Hiển thị username nếu đã đăng nhập, ngược lại hiển thị "User" -->
+		   {{ authService.isLoggedIn() ? authService.getUsername() : 'User' }}
+		   </a>
+		   <div class="dropdown-menu mega-menu start-0 py-6 "
+				 aria-labelledby="menu-item-home"
+				 style="width:320px">
+				<div class="megamenu-home container py-8 px-12">
+					<div class="row">
+		<div class="col">
+			
+			<ul class="list-unstyled mb-0">
+				<li *ngIf="authService.isLoggedIn() && authService.isAdmin()" class="admin-manage-item">
+					<a href="#" (click)="goToAdminManage()" class="admin-manage-link">
+						ADMIN MANAGE
+ 
 					</a>
-					<div class="icons-actions d-flex justify-content-end w-xl-50 fs-28px text-body-emphasis">
-						<!-- ... icons ... (cắt bớt cho ngắn, bạn có thể thêm lại đầy đủ nếu muốn) -->
-						<div class="px-xl-5 d-inline-block">
-							<a class="lh-1 color-inherit text-decoration-none" href="#" data-bs-toggle="offcanvas"
-								data-bs-target="#searchModal" aria-controls="searchModal" aria-expanded="false">
-								<svg class="icon icon-magnifying-glass-light">
-									<use xlink:href="#icon-magnifying-glass-light"></use>
-								</svg>
-							</a>
-						</div>
-						<div class="px-5 d-none d-xl-inline-block">
-							<a class="lh-1 color-inherit text-decoration-none" href="#"
-								(click)="onUserIconClick(); $event.preventDefault();"
-								[attr.data-bs-toggle]="!authService.isLoggedIn() ? 'modal' : null"
-								[attr.data-bs-target]="!authService.isLoggedIn() ? '#signInModal' : null">
-								<svg class="icon icon-user-light">
-									<use xlink:href="#icon-user-light"></use>
-								</svg>
-							</a>
-						</div>
-						<div class="px-5 d-none d-xl-inline-block">
-							<a class="position-relative lh-1 color-inherit text-decoration-none" href="#"
-								(click)="onCartIconClick(); $event.preventDefault();"
-								[attr.data-bs-toggle]="authService.isLoggedIn() ? 'offcanvas' : null"
-								[attr.data-bs-target]="authService.isLoggedIn() ? '#shoppingCart' : null"
-								aria-controls="shoppingCart" aria-expanded="false">
-								<svg class="icon icon-star-light">
-									<use xlink:href="#icon-shopping-bag-open-light"></use>
-								</svg>
-								<span
-									class="badge bg-dark text-white position-absolute top-0 start-100 translate-middle mt-4 rounded-circle fs-13px p-0 square"
-									style="--square-size: 18px">3</span>
-							</a>
-						</div>
-						<div class="color-modes position-relative ps-5">
-							<a class="bd-theme btn btn-link nav-link dropdown-toggle d-inline-flex align-items-center justify-content-center text-primary p-0 position-relative rounded-circle"
-								href="#" aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static"
-								aria-label="Toggle theme (light)">
-								<svg class="bi my-1 theme-icon-active">
-									<use href="#moon-stars-fill"></use>
-								</svg>
-							</a>
-							<ul class="dropdown-menu dropdown-menu-end fs-14px">
-								<li>
-									<button type="button" class="dropdown-item d-flex align-items-center"
-										data-bs-theme-value="light" aria-pressed="false">
-										<svg class="bi me-4 opacity-50 theme-icon">
-											<use href="#sun-fill"></use>
-										</svg>
-										Light
-										<svg class="bi ms-auto d-none">
-											<use href="#check2"></use>
-										</svg>
-									</button>
-								</li>
-								<li>
-									<button type="button" class="dropdown-item d-flex align-items-center active"
-										data-bs-theme-value="dark" aria-pressed="true">
-										<svg class="bi me-4 opacity-50 theme-icon">
-											<use href="#moon-stars-fill"></use>
-										</svg>
-										Dark
-										<svg class="bi ms-auto d-none">
-											<use href="#check2"></use>
-										</svg>
-									</button>
-								</li>
-								<li>
-									<button type="button" class="dropdown-item d-flex align-items-center"
-										data-bs-theme-value="auto" aria-pressed="false">
-										<svg class="bi me-4 opacity-50 theme-icon">
-											<use href="#circle-half"></use>
-										</svg>
-										Auto
-										<svg class="bi ms-auto d-none">
-											<use href="#check2"></use>
-										</svg>
-									</button>
-								</li>
-							</ul>
-						</div>
+				</li>
+				<li *ngIf="!authService.isLoggedIn()">
+					<a href="login" class="border-hover text-decoration-none py-3 d-block"><span class="border-hover-target">LOGIN</span></a>
+				</li>
+				<li *ngIf="authService.isLoggedIn()">
+					<a href="#" (click)="logout()" class="border-hover text-decoration-none py-3 d-block"><span class="border-hover-target">LOGOUT</span></a>
+				</li>
+			</ul>
+			
+		</div>
+		<div class="col">
+			<!-- Hiển thị Register nếu chưa đăng nhập -->
+			<ul class="list-unstyled" *ngIf="!authService.isLoggedIn()">
+				<li><a href="register" class="border-hover text-decoration-none py-3 d-block"><span class="border-hover-target">REGISTER</span></a></li>
+			</ul>	
+		</div>
 					</div>
 				</div>
+			</div>	
+			
+			
+					</ul>
+				</div>
+				<a href="/" class="navbar-brand px-8 py-4 mx-auto text-decoration-none d-flex align-items-center">
+					<span class="light-mode-img fw-bold ls-1 fs-5 text-body-emphasis">Tiệm Tái Sinh</span>
+					<span class="dark-mode-img fw-bold ls-1 fs-5 text-body-emphasis">Tiệm Tái Sinh</span>
+				</a>
+				<div class="icons-actions d-flex justify-content-end w-xl-50 fs-28px text-body-emphasis">
+					<!-- ... icons ... (cắt bớt cho ngắn, bạn có thể thêm lại đầy đủ nếu muốn) -->
+					<div class="px-xl-5 d-inline-block">
+						<a class="lh-1 color-inherit text-decoration-none" href="#" data-bs-toggle="offcanvas" data-bs-target="#searchModal" aria-controls="searchModal" aria-expanded="false">
+							<svg class="icon icon-magnifying-glass-light">
+								<use xlink:href="#icon-magnifying-glass-light"></use>
+							</svg>
+						</a>
+					</div>
+<div class="px-5 d-none d-xl-inline-block">
+  <a class="lh-1 color-inherit text-decoration-none" href="#"
+	 (click)="onUserIconClick(); $event.preventDefault();"
+	 [attr.data-bs-toggle]="!authService.isLoggedIn() ? 'modal' : null"
+	 [attr.data-bs-target]="!authService.isLoggedIn() ? '#signInModal' : null">
+	<svg class="icon icon-user-light">
+	  <use xlink:href="#icon-user-light"></use>
+	</svg>
+  </a>
+</div>
+<div class="px-5 d-none d-xl-inline-block" *ngIf="authService.isLoggedIn()">
+    <div class="position-relative" (click)="toggleChat()" style="cursor: pointer;">
+        <i class="bi bi-chat-left-dots" style="font-size: 24px;"></i>
+        <span class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle mt-2 rounded-circle fs-10px p-0 square" style="--square-size: 16px">1</span>
+    </div>
+
+    <div *ngIf="isChatOpen" 
+         style="position: fixed; bottom: 80px; right: 20px; width: 350px; height: 450px; z-index: 999999; background: white; border: 1px solid #ddd; box-shadow: 0 5px 25px rgba(0,0,0,0.2); border-radius: 10px; overflow: hidden;">
+        
+        <div style="background: #f8f9fa; padding: 5px; text-align: right; border-bottom: 1px solid #eee;">
+            <button (click)="isChatOpen = false" class="btn btn-sm btn-light">X</button>
+        </div>
+
+        <app-chat></app-chat>
+    </div>
+</div>
+<div class="px-5 d-none d-xl-inline-block">
+  <a class="position-relative lh-1 color-inherit text-decoration-none" href="#"
+	 (click)="onCartIconClick(); $event.preventDefault();"
+	 [attr.data-bs-toggle]="authService.isLoggedIn() ? 'offcanvas' : null"
+	 [attr.data-bs-target]="authService.isLoggedIn() ? '#shoppingCart' : null"
+	 aria-controls="shoppingCart" aria-expanded="false">
+	<svg class="icon icon-star-light">
+	  <use xlink:href="#icon-shopping-bag-open-light"></use>
+	</svg>
+	<span class="badge bg-dark text-white position-absolute top-0 start-100 translate-middle mt-4 rounded-circle fs-13px p-0 square" style="--square-size: 18px">3</span>
+  </a>
+</div>
+					<div class="color-modes position-relative ps-5">
+						<a class="bd-theme btn btn-link nav-link dropdown-toggle d-inline-flex align-items-center justify-content-center text-primary p-0 position-relative rounded-circle" href="#" aria-expanded="false" data-bs-toggle="dropdown" data-bs-display="static" aria-label="Toggle theme (light)">
+							<svg class="bi my-1 theme-icon-active"><use href="#moon-stars-fill"></use></svg>
+						</a>
+						<ul class="dropdown-menu dropdown-menu-end fs-14px">
+							<li>
+								<button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+									<svg class="bi me-4 opacity-50 theme-icon"><use href="#sun-fill"></use></svg>
+									Light
+									<svg class="bi ms-auto d-none"><use href="#check2"></use></svg>
+								</button>
+							</li>
+							<li>
+								<button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="dark" aria-pressed="true">
+									<svg class="bi me-4 opacity-50 theme-icon"><use href="#moon-stars-fill"></use></svg>
+									Dark
+									<svg class="bi ms-auto d-none"><use href="#check2"></use></svg>
+								</button>
+							</li>
+							<li>
+								<button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto" aria-pressed="false">
+									<svg class="bi me-4 opacity-50 theme-icon"><use href="#circle-half"></use></svg>
+									Auto
+									<svg class="bi ms-auto d-none"><use href="#check2"></use></svg>
+								</button>
+							</li>
+						</ul>
+					</div>	
+				</div>
+			</div>
 			</div>
 		</div>
 	</div>
 	<div class="modal" id="signInModal" tabindex="-1" aria-labelledby="signInModal" aria-hidden="true">
-		<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header text-center border-0 pb-0">
-					<button type="button" class="btn-close position-absolute end-5 top-5" data-bs-dismiss="modal"
-						aria-label="Close"></button>
-					<h3 class="modal-title w-100" id="signInModalLabel">Sign In</h3>
-				</div>
-				<div class="modal-body px-sm-13 px-8">
-					<p class="text-center fs-16 mb-10">Don’t have an account yet? <a (click)="onRegister()"
-							data-bs-toggle="modal" data-bs-target="#signUpModal" class="text-black">Sign up</a> for free
-					</p>
-					<form (ngSubmit)="onSubmit()">
-						<input name="username" type="email" class="form-control mb-5" placeholder="Username" required
-							[(ngModel)]="username">
-						<input name="password" type="password" class="form-control" placeholder="Password" required
-							[(ngModel)]="password">
-						<div class="d-flex align-items-center justify-content-between mt-8 mb-7">
-							<div class="custom-control d-flex form-check">
-								<input name="stay-signed-in" type="checkbox" class="form-check-input rounded-0 me-3"
-									id="staySignedIn">
-								<label class="custom-control-label text-body" for="staySignedIn">Stay signed in</label>
-							</div>
-							<a href="#" class="text-secondary">Forgot your password?</a>
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header text-center border-0 pb-0">
+				<button type="button" class="btn-close position-absolute end-5 top-5" data-bs-dismiss="modal" aria-label="Close"></button>
+				<h3 class="modal-title w-100" id="signInModalLabel">Sign In</h3>
+			</div>
+			<div class="modal-body px-sm-13 px-8">
+				<p class="text-center fs-16 mb-10">Don’t have an account yet? <a (click)="onRegister()" data-bs-toggle="modal" data-bs-target="#signUpModal" class="text-black">Sign up</a> for free</p>
+				<form (ngSubmit)="onSubmit()">
+					<input name="username" type="email" class="form-control mb-5" placeholder="Username" required [(ngModel)]="username">
+					<input name="password" type="password" class="form-control" placeholder="Password" required [(ngModel)]="password">
+					<div class="d-flex align-items-center justify-content-between mt-8 mb-7">
+						<div class="custom-control d-flex form-check">
+							<input name="stay-signed-in" type="checkbox" class="form-check-input rounded-0 me-3" id="staySignedIn">
+							<label class="custom-control-label text-body" for="staySignedIn">Stay signed in</label>
 						</div>
-						<button type="submit" value="Login"
-							class="btn btn-dark btn-hover-bg-primary btn-hover-border-primary w-100">Log In</button>
-						<div *ngIf="message" class="alert alert-success mt-3">{{ message }}</div>
-						<div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
-					</form>
+						<a href="#" class="text-secondary">Forgot your password?</a>
+					</div>
+					<button type="submit" value="Login" class="btn btn-dark btn-hover-bg-primary btn-hover-border-primary w-100">Log In</button>
+					<div *ngIf="message" class="alert alert-success mt-3">{{ message }}</div>
+					<div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+				</form>
+			</div>
+			<div class="modal-footer px-13 pt-0 pb-12 border-0">
+				<div class="border-bottom w-100"></div>
+				<div class="text-center lh-1 mb-8 w-100 mt-n5">
+					<span class="fs-14 bg-body lh-1 px-4">or Log-in with</span>
 				</div>
-				<div class="modal-footer px-13 pt-0 pb-12 border-0">
-					<div class="border-bottom w-100"></div>
-					<div class="text-center lh-1 mb-8 w-100 mt-n5">
-						<span class="fs-14 bg-body lh-1 px-4">or Log-in with</span>
-					</div>
-					<div class="d-flex w-100">
-						<a href="#"
-							class="btn btn-outline-secondary w-100 border-2x me-5 btn-hover-bg-primary btn-hover-border-primary"><i
-								class="fab fa-facebook-f me-4" style="color: #2E58B2"></i>Facebook</a>
-						<a href="#"
-							class="btn btn-outline-secondary w-100 border-2x mt-0 btn-hover-bg-primary btn-hover-border-primary"><i
-								class="fab fa-google me-4" style="color: #DD4B39"></i>Google</a>
-					</div>
+				<div class="d-flex w-100">
+					<a href="#" class="btn btn-outline-secondary w-100 border-2x me-5 btn-hover-bg-primary btn-hover-border-primary"><i class="fab fa-facebook-f me-4" style="color: #2E58B2"></i>Facebook</a>
+					<a href="#" class="btn btn-outline-secondary w-100 border-2x mt-0 btn-hover-bg-primary btn-hover-border-primary"><i class="fab fa-google me-4" style="color: #DD4B39"></i>Google</a>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div id="shoppingCart" data-bs-scroll="false" class="offcanvas offcanvas-end">
+</div>
+<div id="shoppingCart" data-bs-scroll="false" class="offcanvas offcanvas-end">
 		<div class="offcanvas-header fs-4">
 			<h4 class="offcanvas-title fw-semibold">Shopping Cart</h4>
 			<button type="button" class="btn-close btn-close-bg-none" data-bs-dismiss="offcanvas" aria-label="Close">
@@ -219,60 +258,48 @@
 				<table class="table table-borderless">
 					<thead>
 						<tr class="fw-500">
-							<td colspan="3" class="border-bottom pb-6"><i
-									class="far fa-check fs-12px border me-4 px-2 py-1 text-body-emphasis border-dark rounded-circle"></i>
-								Your cart is saved for the next <span class="text-body-emphasis">4m34s</span></td>
+							<td colspan="3" class="border-bottom pb-6"><i class="far fa-check fs-12px border me-4 px-2 py-1 text-body-emphasis border-dark rounded-circle"></i> Your cart is saved for the next <span class="text-body-emphasis">4m34s</span></td>
 						</tr>
 					</thead>
-					<tbody>
-						<tr *ngFor="let item of cartData?.items" class="position-relative">
-							<td class="align-middle text-center">
-								<a href="#" class="d-block clear-product"
-									(click)="removeCartItem(item); $event.preventDefault()">
-									<i class="far fa-times"></i>
-								</a>
-							</td>
-							<td class="shop-product">
-								<div class="d-flex align-items-center">
-									<div class="me-6">
-										<img [src]="item.product_image" width="60" height="80"
-											[alt]="item.product_name">
-									</div>
-									<div class="">
-										<p class="card-text mb-1">
-											<span class="fs-13px fw-500 text-decoration-line-through pe-3">$39.00</span>
-											<span class="fs-15px fw-bold text-body-emphasis">${{ item.product_price
-												|currency:'VND':'symbol':'1.0-0' }}</span>
-
-										</p>
-										<p class="fw-500 text-body-emphasis">{{ item.product_name }}</p>
-									</div>
-								</div>
-							</td>
-							<td class="align-middle p-0">
-								<div class="input-group position-relative shop-quantity">
-									<a href="#" class="shop-down position-absolute z-index-2"
-										(click)="decreaseQuantity(item)"><i class="far fa-minus"></i></a>
-									<input name="number[]" type="number"
-										class="form-control form-control-sm px-6 py-4 fs-6 text-center border-0"
-										[value]="item.tempQuantity" required="">
-									<a href="#" class="shop-up position-absolute z-index-2"
-										(click)="increaseQuantity(item)"><i class="far fa-plus"></i>
+					<tbody><tr *ngFor="let item of cartData?.items" class="position-relative">
+								<td class="align-middle text-center">
+									<a href="#" class="d-block clear-product" (click)="removeCartItem(item); $event.preventDefault()">
+										<i class="far fa-times"></i>
 									</a>
-								</div>
-							</td>
-						</tr>
-					</tbody>
+								</td>
+								<td class="shop-product">
+									<div class="d-flex align-items-center">
+										<div class="me-6">
+											<img [src]="item.product_image" width="60" height="80" [alt]="item.product_name">
+										</div>
+										<div class="">
+											<p class="card-text mb-1">
+												<span class="fs-13px fw-500 text-decoration-line-through pe-3">$39.00</span>
+												<span class="fs-15px fw-bold text-body-emphasis">${{ item.product_price |currency:'VND':'symbol':'1.0-0' }}</span>
+												
+											</p>
+											<p class="fw-500 text-body-emphasis">{{ item.product_name }}</p>
+										</div>
+									</div>
+								</td>
+								<td class="align-middle p-0">
+									<div class="input-group position-relative shop-quantity">
+										<a href="#" class="shop-down position-absolute z-index-2" (click)="decreaseQuantity(item)"><i class="far fa-minus"></i></a>
+										<input name="number[]" type="number" class="form-control form-control-sm px-6 py-4 fs-6 text-center border-0" [value]="item.tempQuantity" required="">
+										<a href="#" class="shop-up position-absolute z-index-2" (click)="increaseQuantity(item)"><i class="far fa-plus"></i>
+										</a>
+									</div>
+								</td>
+							</tr></tbody>
 				</table>
 			</form>
 		</div>
 		<div class="offcanvas-footer flex-wrap">
 			<div class="d-flex align-items-center justify-content-between w-100 mb-5">
 				<span class="text-body-emphasis">Total price:</span>
-				<span class="cart-total fw-bold text-body-emphasis">{{ cartTotal | currency:'VND':'symbol':'1.0-20'
-					}}</span>
+				<span class="cart-total fw-bold text-body-emphasis">{{ cartTotal | currency:'VND':'symbol':'1.0-20' }}</span>
 			</div>
-			<button type="button" class="btn btn-outline-dark my-5" (click)="onUpdateCart()">Update Cart</button>
+ <button type="button" class="btn btn-outline-dark my-5" (click)="onUpdateCart()">Update Cart</button>
 			<a (click)="onCheckout()" class="btn btn-dark w-100 mb-7" title="Check Out">Check Out</a>
 			<a (click)="goToCart()" class="btn btn-outline-dark w-100" title="View shopping cart">View shopping cart</a>
 		</div>
@@ -281,3 +308,4 @@
 
 
 </header>
+ 

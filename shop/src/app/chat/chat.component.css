@@ -1,0 +1,28 @@
+/* Khung chat tổng thể */
+.chat-popup {
+  position: fixed;
+  bottom: 80px; /* Cách icon chat một đoạn */
+  right: 20px;
+  width: 350px;
+  height: 450px; /* Đặt chiều cao cố định */
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column; /* Quan trọng để đẩy footer xuống dưới */
+  z-index: 1000;
+}
+
+/* Phần thân chứa tin nhắn */
+.chat-body {
+  flex: 1; /* Tự động chiếm hết không gian ở giữa */
+  overflow-y: auto; /* Hiện thanh cuộn khi tin nhắn dài */
+  padding: 10px;
+}
+
+/* Phần chân chứa ô nhập liệu */
+.chat-footer {
+  padding: 10px;
+  border-top: 1px solid #eee;
+  background: white;
+}

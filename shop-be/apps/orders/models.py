@@ -2,23 +2,30 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from apps.products.models import Product
-from django import forms
-
 
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('shipped', 'Shipped'),
-        ('delivered', 'Delivered'),
+        ('pending', 'Pending'),      # Chờ thanh toán
+        ('paid', 'Paid'),            # Đã thanh toán - Hiện ở trang Shipper
+        ('shipped', 'Shipped'),      # Đang đi giao
+        ('delivered', 'Delivered'),  # Đã giao thành công
+        ('cancelled', 'Cancelled'),  # Đơn bị hủy
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # THÊM TRƯỜNG NÀY:
+    shipper = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='shipping_tasks'
+    )
+    
     total_price = models.DecimalField(max_digits=20, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # Thông tin người nhận
     receiver_name = models.CharField(max_length=255, null=True, blank=True)
     address = models.TextField(null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
@@ -27,16 +34,17 @@ class Order(models.Model):
     def update_total_price(self):
         total = sum(item.price * item.quantity for item in self.items.all())
         self.total_price = total
+        # Chỉ save total_price mà không gọi lại hàm save() chính để tránh loop
+        Order.objects.filter(pk=self.pk).update(total_price=total)
 
     def save(self, *args, **kwargs):
-        # Đảm bảo khi tạo mới đơn hàng, status luôn là 'pending' nếu là tạo mới
-        if not self.pk:
+        # Chỉ set pending nếu là đơn hàng mới tạo hoàn toàn
+        if not self.pk and not self.status:
             self.status = 'pending'
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Đơn hàng #{self.id} của {self.user.username}"
-
+        return f"Đơn hàng #{self.id} - {self.status}"
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
@@ -50,23 +58,13 @@ class OrderItem(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        is_new = not self.pk
         super().save(*args, **kwargs)
+        
+        # Cập nhật tổng tiền đơn hàng
         self.order.update_total_price()
-        self.order.save()
 
-        # Trừ tồn kho
-        self.product.quantity -= self.quantity
-        self.product.save()
-
-    def delete(self, *args, **kwargs):
-        order = self.order
-        super().delete(*args, **kwargs)
-        order.update_total_price()
-        order.save()
-
-    def __str__(self):
-        return f"{self.quantity} x {self.product.name} trong đơn #{self.order.id}" 
-
-
-
-
+        # Chỉ trừ kho khi tạo mới item
+        if is_new:
+            self.product.quantity -= self.quantity
+            self.product.save()

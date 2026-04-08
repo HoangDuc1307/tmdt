@@ -15,6 +15,9 @@ import hashlib
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .utils import send_payment_email
+from rest_framework import generics # THÊM DÒNG NÀY ĐỂ HẾT LỖI NameError
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication # Để fix lỗi 401
 
 # Đơn hàng "đã mua" (đã thanh toán hoặc đang/đã giao) — không hiển thị pending ở list/detail buyer
 PURCHASED_ORDER_STATUSES = ('paid', 'shipped', 'delivered')
@@ -284,3 +287,53 @@ class VNPayReturnView(APIView):
             print("[VNPay Callback] LỖI: Sai chữ ký!")
             return Response({"message": "Sai chữ ký VNPay"}, status=400) 
 
+# --- PHẦN DÀNH CHO SHIPPER ---
+
+class ShipperOrderListView(generics.ListAPIView):
+    """Danh sách đơn hàng 'Sẵn có' cho Shipper (Chưa có ai nhận)"""
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        # Chỉ lấy đơn 'paid' (đã trả tiền) và 'shipper__isnull=True' (chưa ai nhận)
+        # Khi Shipper bấm nhận, status đổi hoặc shipper đã gán -> Đơn tự biến mất khỏi list này
+        return Order.objects.filter(status='paid', shipper__isnull=True).order_by('-created_at')
+
+
+class ShipperAcceptOrderView(APIView):
+    """Bấm nút: NHẬN ĐƠN -> Chuyển sang trạng thái 'shipping'"""
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id):
+        # Chỉ cho nhận đơn đang ở trạng thái 'paid' và chưa có shipper
+        order = get_object_or_404(Order, id=order_id, status='paid', shipper__isnull=True)
+        
+        order.shipper = request.user
+        order.status = 'shipping'  # Đổi thành 'shipping' (Đang giao)
+        order.save()
+        
+        return Response({
+            "message": "Đã nhận đơn hàng thành công", 
+            "status": "shipping",
+            "shipper": request.user.username
+        })
+
+
+class ShipperCompleteOrderView(APIView):
+    """Bấm nút: HOÀN THÀNH -> Chuyển sang trạng thái 'completed'"""
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id):
+        # Chỉ hoàn thành đơn do chính mình đang đi giao (status='shipping')
+        order = get_object_or_404(Order, id=order_id, shipper=request.user, status='shipping')
+        
+        order.status = 'completed' # Đổi thành 'completed' (Đã giao xong)
+        order.save()
+        
+        return Response({
+            "message": "Đã giao hàng thành công", 
+            "status": "completed"
+        })

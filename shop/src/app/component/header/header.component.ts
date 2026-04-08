@@ -3,15 +3,28 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../api/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ChatService } from '../../api/chat.service'; // Đảm bảo đúng đường dẫn
+// Đi ra khỏi 'header', đi ra khỏi 'component', rồi mới vào 'chat'
+import { ChatComponent } from '../../chat/chat.component';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css'],
-  imports: [RouterModule, CommonModule, FormsModule],
+  imports: [RouterModule, CommonModule, FormsModule, ChatComponent],
   standalone:true
 })
 export class HeaderComponent implements OnInit {
+  // Trong header.component.ts
+isChatOpen: boolean = false; 
+
+toggleChat() {
+  // Dòng này cực quan trọng: Đảo ngược giá trị hiện tại
+  this.isChatOpen = !this.isChatOpen; 
+  
+  // Xóa cái alert cũ đi, dùng console.log để kiểm tra cho sạch
+  console.log('Trạng thái khung chat hiện tại:', this.isChatOpen);
+}
   onCartIconClick() {
     if (this.authService.isLoggedIn()) {
       this.reloadCart(false);
@@ -21,6 +34,7 @@ export class HeaderComponent implements OnInit {
   }
   searchTerm: string = '';
   @Output() search = new EventEmitter<string>();
+  unreadCount: number = 1;
   cartItemCount: number = 0;
   username = '';
   password = '';
@@ -33,10 +47,12 @@ export class HeaderComponent implements OnInit {
   USD_TO_VND = 25000;
 
 
-  constructor(public authService: AuthService, private router: Router) {}
+  constructor(public authService: AuthService, private router: Router,private chatService: ChatService) {}
 
   ngOnInit(): void {
-     this.authService.getCart().subscribe({
+  // Chỉ gọi lấy giỏ hàng khi đã đăng nhập
+  if (this.authService.isLoggedIn()) {
+    this.authService.getCart().subscribe({
       next: (data) => {
         this.cartData = data;
         if (this.cartData?.items) {
@@ -49,6 +65,22 @@ export class HeaderComponent implements OnInit {
         this.cartData = null;
       }
     });
+  }
+ // Sửa dòng 69 trong header.component.ts
+this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đóng mở ngoặc đơn
+  this.isChatOpen = state.open;
+  if (state.open) {
+    console.log('Header: Khung chat đã mở cho seller:', state.recipientId);
+  }
+});
+
+}
+  goToMessages() {
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/messages']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
   get cartTotal(): number {
     if (!this.cartData?.items) return 0;
@@ -214,32 +246,8 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  goToAdminManage(event: Event) {
-    event.preventDefault();
-    event.stopPropagation();
-    // Admin hệ thống vào shell admin mới (không dùng trang seller nữa)
-    this.router.navigate(['/admin/dashboard']);
-  }
-
-  goToSuperAdminManage(event: Event) {
-    event.preventDefault();
-    event.stopPropagation();
-    this.router.navigate(['/admin/dashboard']);
-  }
-
-  goToAddProduct(event: Event) {
-    event.preventDefault();
-    this.router.navigate(['/add_product']);
-  }
-
-  goToMyProducts(event: Event) {
-    event.preventDefault();
-    this.router.navigate(['/my-products']);
-  }
-
-  goToAddCategory(event: Event) {
-    event.preventDefault();
-    this.router.navigate(['/category']);
+  goToAdminManage() {
+    this.router.navigate(['/admin']);
   }
 
   goToManageProduct(event: Event) {
@@ -253,53 +261,38 @@ export class HeaderComponent implements OnInit {
     this.search.emit(this.searchTerm);
   }
   onSubmit() {
-    this.message = '';
-    this.error = '';
-    
-    this.authService.login({ username: this.username, password: this.password })
-      .subscribe({
-        next: (res) => { 
-          this.message = res.message; 
-          
-          // Hiển thị tokens trong console
-          console.log('Access Token:', res.access);
-          console.log('Refresh Token:', res.refresh);
-          console.log('User info:', res.user);
-          
-          // Lưu JWT tokens và thông tin user vào localStorage
-          this.authService.saveTokens(res.access, res.refresh, res.user);
+  this.message = '';
+  this.error = '';
+  
+  this.authService.login({ username: this.username, password: this.password })
+    .subscribe({
+      next: (res) => { 
+        this.message = res.message; 
+        this.authService.saveTokens(res.access, res.refresh, res.user);
 
-          // Đóng modal signin
-          const modal = document.getElementById('signInModal');
-          if (modal) {
-            const modalInstance = (window as any).bootstrap?.Modal?.getInstance(modal);
-            if (modalInstance) {
-              modalInstance.hide();
-            } else {
-              // Fallback nếu không có Bootstrap Modal instance
-              modal.style.display = 'none';
-              modal.classList.remove('show');
-              document.body.classList.remove('modal-open');
-              const backdrop = document.querySelector('.modal-backdrop');
-              if (backdrop) {
-                backdrop.remove();
-              }
-            }
-          }
+        // --- PHẦN TIN NHẮN & GIỎ HÀNG ---
+        this.unreadCount = 1; // Gán tạm là 1 để icon hiện số thông báo ngay lập tức
+        this.reloadCart(false); // Tiện tay cập nhật luôn giỏ hàng cho đồng bộ
+        // -------------------------------
 
-          // Điều hướng dựa trên quyền admin
-          if (res.user && res.user.is_superuser === true) {
-            this.router.navigate(['/admin']);
-          } else if (res.user && res.user.is_staff === true) {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/']);
-          }
-        },
-        error: (err) => { 
-          this.error = err.error?.error || 'Đăng nhập thất bại'; 
+        // Đóng modal signin
+        const modal = document.getElementById('signInModal');
+        if (modal) {
+          const modalInstance = (window as any).bootstrap?.Modal?.getInstance(modal);
+          if (modalInstance) modalInstance.hide();
         }
-      });
+
+        // Điều hướng
+        if (res.user && res.user.is_staff === true) {
+          this.router.navigate(['/admin']);
+        } else {
+          this.router.navigate(['/']);
+        }
+      },
+      error: (err) => { 
+        this.error = err.error?.error || 'Đăng nhập thất bại'; 
+      }
+    });
   }
    onRegister() {
     // Chuyển hướng sang trang đăng ký

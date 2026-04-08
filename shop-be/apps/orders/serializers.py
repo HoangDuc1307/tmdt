@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Order, OrderItem
 
-
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_price = serializers.DecimalField(source='product.price', read_only=True, max_digits=10, decimal_places=2)
@@ -9,6 +8,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = OrderItem
+        # Đảm bảo các trường này khớp 100% với khai báo ở trên để tránh AssertionError
         fields = ['id', 'product', 'product_name', 'product_price', 'quantity', 'price', 'product_image']
 
     def get_product_image(self, obj):
@@ -16,14 +16,10 @@ class OrderItemSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if not image:
             return None
-
-        # Nếu là ImageField (có thuộc tính url)
         if hasattr(image, 'url'):
             if request is not None:
                 return request.build_absolute_uri(image.url)
             return image.url
-
-        # Nếu là string (CharField hoặc URL)
         image_str = str(image)
         if image_str.startswith('http'):
             return image_str
@@ -31,14 +27,18 @@ class OrderItemSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(image_str)
         return image_str
 
-
 class OrderSerializer(serializers.ModelSerializer):
     user_profile = serializers.SerializerMethodField()
     items = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'status', 'total_price', 'created_at', 'receiver_name', 'address', 'phone', 'email', 'user_profile', 'items']
+        # Các trường này sẽ giúp hiện: Tiến Đinh, 10tr, Địa chỉ, SĐT...
+        fields = [
+            'id', 'status', 'total_price', 'created_at', 
+            'receiver_name', 'address', 'phone', 'email', 
+            'user_profile', 'items'
+        ]
 
     def get_user_profile(self, obj):
         try:
@@ -55,10 +55,10 @@ class OrderSerializer(serializers.ModelSerializer):
             return None
 
     def get_items(self, obj):
+        # Trả về danh sách sản phẩm trong đơn hàng
         return OrderItemSerializer(obj.items.all(), many=True, context=self.context).data
-
 
 class OrderUpdateInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ['receiver_name', 'address', 'phone', 'email'] 
+        fields = ['receiver_name', 'address', 'phone', 'email']

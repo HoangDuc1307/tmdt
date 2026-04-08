@@ -28,6 +28,7 @@ import { UsersManagementComponent } from './admin/pages/users-management/users-m
 import { ReportsManagementComponent } from './admin/pages/reports-management/reports-management.component';
 import { FeesStatisticsComponent } from './admin/pages/fees-statistics/fees-statistics.component';
 import { UserDetailComponent } from './admin/pages/users-management/user-details/user-details.component';
+import { ShipperComponent } from './shipper/shipper.component';
 
 const adminSystemGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -58,6 +59,7 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashBoardComponent },
   { path: 'chatmanage', component: ChatManageComponent },
   { path: 'my-products', component: MyProductsComponent },
+  {path: 'shipper', component: ShipperComponent },
 
   // Admin system shell + child pages (same UX as admin-fe)
   {

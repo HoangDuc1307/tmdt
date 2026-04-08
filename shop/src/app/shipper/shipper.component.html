@@ -1,0 +1,68 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">DANH SÁCH ĐƠN HÀNG</h5>
+      <span class="badge bg-light text-primary">{{ orders.length }} Đơn hàng</span>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Khách hàng</th>
+            <th>Sản phẩm & Giá</th>
+            <th>Địa chỉ giao</th>
+            <th class="text-center">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!orders || orders.length === 0">
+            <td colspan="4" class="text-center py-5 text-muted">
+              Hiện tại chưa có đơn hàng nào cần xử lý.
+            </td>
+          </tr>
+
+          <tr *ngFor="let order of orders">
+            <td>
+              <div class="fw-bold">{{ order.receiver_name }}</div>
+              <div class="small text-muted">{{ order.email }}</div>
+              <div class="small text-primary">{{ order.phone }}</div>
+            </td>
+
+            <td>
+              <div *ngFor="let item of order.items" class="small">
+                • <b>{{ item.product_name }}</b> (x{{ item.quantity }})
+              </div>
+              <div class="fw-bold text-danger mt-1">
+                ₫{{ order.total_price | number }}
+              </div>
+              <span class="badge mt-1" [ngClass]="{
+                'bg-info text-dark': order.status === 'paid',
+                'bg-warning text-dark': order.status === 'shipping'
+              }">
+                {{ order.status === 'paid' ? 'Chờ nhận đơn' : 'Đang đi giao' }}
+              </span>
+            </td>
+
+            <td>
+              <div class="small text-wrap" style="max-width: 200px;">{{ order.address }}</div>
+            </td>
+
+            <td class="text-center">
+              <button *ngIf="order.status === 'paid'" 
+                      class="btn btn-success btn-sm px-3 fw-bold" 
+                      (click)="onAccept(order.id)">
+                NHẬN ĐƠN
+              </button>
+
+              <button *ngIf="order.status === 'shipping'" 
+                      class="btn btn-warning btn-sm px-3 fw-bold" 
+                      (click)="onComplete(order.id)">
+                XÁC NHẬN HOÀN THÀNH
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

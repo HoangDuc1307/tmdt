@@ -1,0 +1,22 @@
+.table thead th {
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.table tbody td {
+  padding: 1rem;
+}
+
+.btn-success {
+  transition: transform 0.2s;
+}
+
+.btn-success:hover {
+  transform: scale(1.05);
+  background-color: #198754;
+}
+
+.badge {
+  font-weight: 500;
+}

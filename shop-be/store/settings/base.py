@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.reviews',
     'apps.marketplace',
     'chatbot.apps.ChatbotConfig',
+    'apps.chat',  # Phải khai báo là 'apps.chat'
 ]
 
 MIDDLEWARE = [

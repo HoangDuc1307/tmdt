@@ -4,16 +4,15 @@ import { FooterComponent } from '../component/footer/footer.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../api/auth.service';
-import { ReviewService } from '../api/review.service';
-import { StarRatingComponent } from '../component/star-rating/star-rating.component';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-
+import { ActivatedRoute, Router } from '@angular/router'; // Thêm Router
+import { RouterModule } from '@angular/router';
+import { ChatService } from '../api/chat.service';
 @Component({
   selector: 'app-product',
   standalone: true,
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.css'],
-  imports: [FormsModule, CommonModule, HeaderComponent, FooterComponent, RouterModule, StarRatingComponent]
+  imports: [FormsModule, CommonModule, HeaderComponent, FooterComponent, RouterModule]
 })
 export class ProductComponent implements OnInit {
   product: any = null;
@@ -25,151 +24,71 @@ export class ProductComponent implements OnInit {
   totalRelatedPages: number = 1;
   pagedRelatedProducts: any[] = [];
 
-  // Reviews properties
-  reviews: any[] = [];
-  newReviewRating: number = 5;
-  newReviewComment: string = '';
-  submittingReview: boolean = false;
-
-  // Seller Reviews properties
-  sellerReviews: any[] = [];
-  newSellerReviewRating: number = 5;
-  newSellerReviewComment: string = '';
-  submittingSellerReview: boolean = false;
-
-  // Tab control
-  activeReviewTab: string = 'product';
-
+  // Thêm router vào constructor
   constructor(
     public authService: AuthService, 
     private route: ActivatedRoute,
-    private reviewService: ReviewService
+    private router: Router,
+    private chatService: ChatService
   ) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
-        this.loadProduct(id);
-        this.loadReviews(id);
+        this.authService.getProductById(id).subscribe({
+          next: (data: any) => {
+            this.product = data;
+            this.authService.getRelatedProducts(id).subscribe({
+              next: (res: any) => {
+                this.relatedProducts = Array.isArray(res) ? res : (res?.results || []);
+                this.totalRelatedPages = Math.ceil(this.relatedProducts.length / this.pageSizeRelated) || 1;
+                this.currentRelatedPage = 1;
+                this.getRelatedProductsPage();
+              },
+              error: () => {
+                this.relatedProducts = [];
+                this.pagedRelatedProducts = [];
+                this.totalRelatedPages = 1;
+                this.currentRelatedPage = 1;
+              }
+            });
+          },
+          error: (err: any) => {
+            this.product = null;
+          }
+        });
       }
     });
   }
 
-  loadProduct(id: string) {
-    this.authService.getProductById(id).subscribe({
-      next: (data: any) => {
-        this.product = data;
-        this.loadRelatedProducts(id);
-        if (this.product.seller) {
-          this.loadSellerReviews(this.product.seller);
-        }
-      },
-      error: (err: any) => {
-        this.product = null;
-      }
-    });
+  // Trong product.component.ts
+  openChatWithSeller() {
+  if (!this.authService.isLoggedIn()) {
+    window.alert('Vui lòng đăng nhập để nhắn tin!');
+    return;
   }
 
-  loadReviews(productId: any) {
-    this.reviewService.getProductReviews(productId).subscribe({
-      next: (data: any) => {
-        this.reviews = Array.isArray(data) ? data : (data?.results || []);
-      },
-      error: (err) => console.error('Lỗi khi tải đánh giá sản phẩm:', err)
-    });
+  // Lấy ID người bán (Đảm bảo key owner.id hoặc user_id đúng với API của Đạt)
+  const sellerId = this.product?.owner?.id || this.product?.user_id || 1;
+  const sellerName = this.product?.owner?.name || this.product?.user_name || 'Người bán';
+
+  if (sellerId) {
+    // Gọi hàm triggerChat trong Service để báo cho Header bật khung chat lên
+    this.chatService.triggerChat(sellerId, sellerName);
+    console.log('Đã gửi lệnh mở chat tới seller:', sellerId);
   }
+}
+// Trong product-detail.component.ts (hoặc file tương ứng của bạn)
+chatWithSeller() {
+  // Giả sử đối tượng sản phẩm của bạn là 'product'
+  // và nó có thông tin người bán là 'product.seller_name' hoặc 'product.owner.username'
+  const sellerId = this.product.owner.id; 
+  const sellerName = this.product.owner.username; // Lấy tên người bán ở đây
 
-  loadRelatedProducts(id: string) {
-    this.authService.getRelatedProducts(id).subscribe({
-      next: (res: any) => {
-        this.relatedProducts = Array.isArray(res) ? res : (res?.results || []);
-        this.totalRelatedPages = Math.ceil(this.relatedProducts.length / this.pageSizeRelated) || 1;
-        this.currentRelatedPage = 1;
-        this.getRelatedProductsPage();
-      },
-      error: () => {
-        this.relatedProducts = [];
-        this.pagedRelatedProducts = [];
-        this.totalRelatedPages = 1;
-        this.currentRelatedPage = 1;
-      }
-    });
-  }
-
-  loadSellerReviews(sellerId: any) {
-    this.reviewService.getSellerReviews(sellerId).subscribe({
-      next: (data: any) => {
-        this.sellerReviews = Array.isArray(data) ? data : (data?.results || []);
-      },
-      error: (err) => console.error('Lỗi khi tải đánh giá người bán:', err)
-    });
-  }
-
-  submitReview() {
-    if (!this.authService.isLoggedIn()) {
-      alert('Vui lòng đăng nhập để đánh giá sản phẩm!');
-      return;
-    }
-    if (!this.newReviewComment.trim()) {
-      alert('Vui lòng nhập nội dung đánh giá!');
-      return;
-    }
-
-    this.submittingReview = true;
-    const reviewData = {
-      product: this.product.id,
-      rating: this.newReviewRating,
-      comment: this.newReviewComment
-    };
-
-    this.reviewService.addProductReview(reviewData).subscribe({
-      next: (res) => {
-        alert('Cảm ơn bạn đã đánh giá sản phẩm!');
-        this.newReviewComment = '';
-        this.newReviewRating = 5;
-        this.loadReviews(this.product.id);
-        this.submittingReview = false;
-      },
-      error: (err) => {
-        alert('Có lỗi xảy ra: ' + (err.error?.detail || 'Vui lòng thử lại'));
-        this.submittingReview = false;
-      }
-    });
-  }
-
-  submitSellerReview() {
-    if (!this.authService.isLoggedIn()) {
-      alert('Vui lòng đăng nhập để đánh giá người bán!');
-      return;
-    }
-    if (!this.newSellerReviewComment.trim()) {
-      alert('Vui lòng nhập nội dung đánh giá người bán!');
-      return;
-    }
-
-    this.submittingSellerReview = true;
-    const reviewData = {
-      seller: this.product.seller,
-      rating: this.newSellerReviewRating,
-      comment: this.newSellerReviewComment
-    };
-
-    this.reviewService.addSellerReview(reviewData).subscribe({
-      next: (res) => {
-        alert('Cảm ơn bạn đã đánh giá người bán!');
-        this.newSellerReviewComment = '';
-        this.newSellerReviewRating = 5;
-        this.loadSellerReviews(this.product.seller);
-        this.submittingSellerReview = false;
-      },
-      error: (err) => {
-        alert('Có lỗi xảy ra: ' + (err.error?.detail || 'Vui lòng thử lại'));
-        this.submittingSellerReview = false;
-      }
-    });
-  }
-
+  // Truyền cả ID và Tên vào Service
+  this.chatService.triggerChat(sellerId, sellerName);
+}
   getRelatedProductsPage() {
     const start = (this.currentRelatedPage - 1) * this.pageSizeRelated;
     const end = start + this.pageSizeRelated;

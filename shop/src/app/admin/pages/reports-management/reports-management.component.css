@@ -23,9 +23,22 @@
     max-width: 260px;
 }
 
+.filter-actions-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #fff;
+}
+
+.action-btn {
+    min-width: 170px;
+}
+
 @media (max-width: 600px) {
     .input {
         min-width: unset;
+        width: 100%;
+    }
+
+    .action-btn {
         width: 100%;
     }
 }

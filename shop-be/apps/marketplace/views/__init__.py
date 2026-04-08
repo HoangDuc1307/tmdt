@@ -16,6 +16,7 @@ from .reports import AdminReportViewSet
 from .fees import (
     save_fees_report,
     fee_statistics,
+    fee_config,
     fee_top_transactions,
     export_fees_report_csv,
 )

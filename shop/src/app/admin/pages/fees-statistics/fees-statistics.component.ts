@@ -22,6 +22,9 @@ export class FeesStatisticsComponent implements OnInit, OnDestroy {
   ts = { labels: [] as string[], revenue: [] as number[], platform_fee: [] as number[] };
   topTransactions: any[] = [];
   savingReport = false;
+  updatingFeeConfig = false;
+  platformFeePercent = 10;
+  newPlatformFeePercent = 10;
   saveMessage = '';
   chartDays = 7;
   private chart?: Chart;
@@ -42,20 +45,28 @@ export class FeesStatisticsComponent implements OnInit, OnDestroy {
     this.saveMessage = '';
 
     const stats$ = this.adminService.getFeeStatistics(this.chartDays).pipe(catchError(() => of(null)));
+    const feeConfig$ = this.adminService.getFeeConfig().pipe(catchError(() => of(null)));
     const ts$ = this.adminService.getDashboardTimeseries(this.chartDays).pipe(catchError(() => of(null)));
     const top$ = this.adminService.getFeeTopTransactions().pipe(catchError(() => of([])));
 
     // Chờ cả 3 API trả về kết quả rồi mới xử lý tiếp
-    forkJoin({ stats: stats$, ts: ts$, top: top$ }).pipe(
+    forkJoin({ stats: stats$, feeConfig: feeConfig$, ts: ts$, top: top$ }).pipe(
       finalize(() => {
         this.loading = false;
         this.cdr.detectChanges();
         queueMicrotask(() => this.renderChart()); // Vẽ lại chart sau khi đã có đủ số liệu
       })
-    ).subscribe(({ stats, ts, top }) => {
+    ).subscribe(({ stats, feeConfig, ts, top }) => {
       if (stats) {
         this.stats = { ...this.stats, ...stats };
+        if (stats.platform_fee_percent !== undefined) {
+          this.platformFeePercent = Number(stats.platform_fee_percent) || this.platformFeePercent;
+        }
       }
+      if (feeConfig?.platform_fee_percent !== undefined) {
+        this.platformFeePercent = Number(feeConfig.platform_fee_percent) || this.platformFeePercent;
+      }
+      this.newPlatformFeePercent = this.platformFeePercent;
       if (ts) {
         this.ts = {
           labels: ts.labels ?? [],
@@ -126,6 +137,32 @@ export class FeesStatisticsComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.saveMessage = 'Xuất báo cáo thất bại.';
+      },
+    });
+  }
+
+  updatePlatformFeePercent(): void {
+    const value = Number(this.newPlatformFeePercent);
+    if (!Number.isFinite(value) || value < 0 || value > 100) {
+      this.saveMessage = 'Mức phí sàn phải trong khoảng 0% - 100%.';
+      return;
+    }
+    this.updatingFeeConfig = true;
+    this.saveMessage = '';
+    this.adminService.updateFeeConfig(value).pipe(
+      finalize(() => {
+        this.updatingFeeConfig = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: (res) => {
+        this.platformFeePercent = Number(res.platform_fee_percent) || value;
+        this.newPlatformFeePercent = this.platformFeePercent;
+        this.saveMessage = res.message || 'Đã cập nhật mức phí sàn.';
+        this.load();
+      },
+      error: (err) => {
+        this.saveMessage = err?.error?.detail || 'Cập nhật mức phí sàn thất bại.';
       },
     });
   }

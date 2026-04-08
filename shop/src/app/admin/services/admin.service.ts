@@ -119,6 +119,18 @@ export class AdminService {
     return this.http.get(`${this.baseUrl}/fees/statistics/`, this.withAuth({ days }));
   }
 
+  getFeeConfig(): Observable<{ platform_fee_percent: string }> {
+    return this.http.get<{ platform_fee_percent: string }>(`${this.baseUrl}/fees/config/`, this.withAuth());
+  }
+
+  updateFeeConfig(platformFeePercent: number): Observable<{ platform_fee_percent: string; message: string }> {
+    return this.http.put<{ platform_fee_percent: string; message: string }>(
+      `${this.baseUrl}/fees/config/`,
+      { platform_fee_percent: platformFeePercent },
+      this.withAuth(),
+    );
+  }
+
   // Xem ai là người đóng góp phí sàn nhiều nhất
   getFeeTopTransactions(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/fees/top-transactions/`, this.withAuth());

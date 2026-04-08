@@ -41,9 +41,32 @@
     white-space: nowrap;
 }
 
+.filter-actions-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #fff;
+}
+
+.listing-search-input {
+    min-width: 280px;
+    max-width: 460px;
+}
+
+.action-btn {
+    min-width: 150px;
+}
+
 @media (max-width: 600px) {
     .input {
         min-width: unset;
+        width: 100%;
+    }
+
+    .listing-search-input {
+        min-width: 100%;
+        max-width: 100%;
+    }
+
+    .action-btn {
         width: 100%;
     }
 }

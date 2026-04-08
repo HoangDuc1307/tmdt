@@ -108,3 +108,12 @@ class AdminAuditLog(models.Model):
 
     def __str__(self):
         return f"{self.admin.username if self.admin else 'Unknown'} - {self.action} ({self.timestamp})"
+
+
+class PlatformSetting(models.Model):
+    key = models.CharField(max_length=100, unique=True)
+    value = models.CharField(max_length=255)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.key}={self.value}"

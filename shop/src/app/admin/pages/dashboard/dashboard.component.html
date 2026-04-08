@@ -1,22 +1,30 @@
 <div class="dashboard-page-content" data-animated-id="1">
-    <div class="row mb-9 align-items-center">
-        <div class="col-sm-6 mb-8 mb-sm-0">
+    <div class="row mb-5 align-items-center">
+        <div class="col-sm-6 mb-3 mb-sm-0">
             <h2 class="fs-4 mb-0">Bảng điều khiển</h2>
             <p class="mb-0">Thống kê tổng quan hệ thống</p>
         </div>
-        <div class="col-sm-6 d-flex flex-wrap justify-content-sm-end gap-2">
-            <select id="chartDays" name="chartDays" class="form-select w-auto" [ngModel]="chartDays" (ngModelChange)="chartDays=$event; onChartDaysChange()">
-                <option [value]="7">7 ngày</option>
-                <option [value]="14">14 ngày</option>
-                <option [value]="30">30 ngày</option>
-            </select>
-            <button class="btn btn-primary" (click)="loadAll()" [disabled]="loadingSummary || loadingChart">
-                <i class="fas fa-sync-alt me-1"></i> Làm mới
-            </button>
-            <button class="btn btn-primary" (click)="saveReport()" [disabled]="loadingSummary || loadingChart || savingReport || !summary">
-                <i class="fas fa-save me-1" *ngIf="!savingReport"></i>
-                <span class="d-inline-block">{{ savingReport ? 'Đang lưu...' : 'Lưu báo cáo' }}</span>
-            </button>
+    </div>
+
+    <div class="card rounded-4 p-4 mb-4 filter-actions-card">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <label for="chartDays" class="mb-0 fw-semibold text-muted">Khoảng thời gian</label>
+                <select id="chartDays" name="chartDays" class="form-select time-filter-select" [ngModel]="chartDays" (ngModelChange)="chartDays=$event; onChartDaysChange()">
+                    <option [value]="7">7 ngày gần nhất</option>
+                    <option [value]="14">14 ngày gần nhất</option>
+                    <option [value]="30">30 ngày gần nhất</option>
+                </select>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-outline-primary action-btn" (click)="loadAll()" [disabled]="loadingSummary || loadingChart">
+                    <i class="fas fa-sync-alt me-1"></i> Làm mới dữ liệu
+                </button>
+                <button class="btn btn-primary action-btn" (click)="saveReport()" [disabled]="loadingSummary || loadingChart || savingReport || !summary">
+                    <i class="fas fa-save me-1" *ngIf="!savingReport"></i>
+                    <span class="d-inline-block">{{ savingReport ? 'Đang lưu...' : 'Lưu báo cáo Excel' }}</span>
+                </button>
+            </div>
         </div>
     </div>
     

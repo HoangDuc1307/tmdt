@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from rest_framework import serializers
-from .models import Order, OrderItem
+from .models import Order, OrderItem,Notification
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
@@ -104,3 +104,24 @@ class SellerOrderSerializer(serializers.ModelSerializer):
         for item in obj.items.filter(product__seller=seller):
             total += item.price * item.quantity
         return total
+    # ... (Giữ nguyên các code cũ của bạn bên trên)
+
+class NotificationSerializer(serializers.ModelSerializer):
+    """Serializer để trả về danh sách thông báo cho Angular"""
+    created_at_formatted = serializers.DateTimeField(source='created_at', format="%H:%M %d/%m/%Y", read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'content', 'order', 'is_read', 'created_at', 'created_at_formatted']
+        read_only_fields = ['id', 'created_at']
+
+class OrderStatusUpdateSerializer(serializers.ModelSerializer):
+    """Dùng riêng cho Shipper cập nhật trạng thái đơn hàng"""
+    class Meta:
+        model = Order
+        fields = ['status']
+
+    def update(self, instance, validated_data):
+        instance.status = validated_data.get('status', instance.status)
+        instance.save()
+        return instance

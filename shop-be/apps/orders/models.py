@@ -2,14 +2,16 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from apps.products.models import Product
+from django.conf import settings
 
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),      # Chờ thanh toán
-        ('paid', 'Paid'),            # Đã thanh toán - Hiện ở trang Shipper
-        ('shipped', 'Shipped'),      # Đang đi giao
-        ('delivered', 'Delivered'),  # Đã giao thành công
-        ('cancelled', 'Cancelled'),  # Đơn bị hủy
+        ('pending', 'Pending'),           # Chờ thanh toán
+        ('paid', 'Paid'),                 # Đã thanh toán - Hiện ở trang Shipper
+        ('shipped', 'Shipped'),           # Đang đi giao
+        ('delivered', 'Delivered'),       # Đã giao thành công
+        ('confirmed_received', 'Confirmed Received'),  # Người mua xác nhận đã nhận
+        ('cancelled', 'Cancelled'),       # Đơn bị hủy
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -68,3 +70,13 @@ class OrderItem(models.Model):
         if is_new:
             self.product.quantity -= self.quantity
             self.product.save()
+class Notification(models.Model):
+    # Người nhận thông báo (người mua hoặc người bán)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    content = models.TextField()
+    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='order_notifications')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']

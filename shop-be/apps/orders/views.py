@@ -16,11 +16,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from .utils import send_payment_email
 from rest_framework import generics # THÊM DÒNG NÀY ĐỂ HẾT LỖI NameError
-from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication # Để fix lỗi 401
+from rest_framework import viewsets, permissions
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .models import Notification
+from .serializers import NotificationSerializer
 
 # Đơn hàng "đã mua" (đã thanh toán hoặc đang/đã giao) — không hiển thị pending ở list/detail buyer
-PURCHASED_ORDER_STATUSES = ('paid', 'shipped', 'delivered')
+PURCHASED_ORDER_STATUSES = ('paid', 'shipped', 'delivered', 'confirmed_received')
 
 
 class CheckoutView(APIView):
@@ -336,7 +339,7 @@ class ShipperOrderListView(generics.ListAPIView):
 
 
 class ShipperAcceptOrderView(APIView):
-    """Bấm nút: NHẬN ĐƠN -> Chuyển sang trạng thái 'shipping'"""
+    """Bấm nút: NHẬN ĐƠN -> Chuyển sang trạng thái 'shipped'"""
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -345,29 +348,50 @@ class ShipperAcceptOrderView(APIView):
         order = get_object_or_404(Order, id=order_id, status='paid', shipper__isnull=True)
         
         order.shipper = request.user
-        order.status = 'shipping'  # Đổi thành 'shipping' (Đang giao)
+        order.status = 'shipped'
         order.save()
         
         return Response({
             "message": "Đã nhận đơn hàng thành công", 
-            "status": "shipping",
+            "status": "shipped",
             "shipper": request.user.username
         })
 
 
 class ShipperCompleteOrderView(APIView):
-    """Bấm nút: HOÀN THÀNH -> Chuyển sang trạng thái 'completed'"""
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, order_id):
-        # Chỉ hoàn thành đơn do chính mình đang đi giao (status='shipping')
-        order = get_object_or_404(Order, id=order_id, shipper=request.user, status='shipping')
-        
-        order.status = 'completed' # Đổi thành 'completed' (Đã giao xong)
+        order = get_object_or_404(Order, id=order_id, shipper=request.user, status='shipped')
+        order.status = 'delivered'
         order.save()
-        
-        return Response({
-            "message": "Đã giao hàng thành công", 
-            "status": "completed"
-        })
+
+        return Response({"message": "Xác nhận hoàn thành thành công"}, status=200)
+
+
+class BuyerConfirmReceivedView(APIView):
+    """Người mua xác nhận đã nhận hàng thành công"""
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id, user=request.user, status='delivered')
+        order.status = 'confirmed_received'
+        order.save()
+
+        return Response({"message": "Xác nhận đã nhận hàng thành công"}, status=200)
+
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = NotificationSerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        # Người dùng chỉ xem được thông báo của chính mình
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
+
+    # Thêm action để đánh dấu đã đọc khi người dùng click vào thông báo
+    def perform_update(self, serializer):
+        serializer.save(is_read=True)

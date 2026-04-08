@@ -28,4 +28,10 @@ urlpatterns = [
     
     # 3. Shipper hoàn thành giao hàng
     path('shipper/complete/<int:order_id>/', views.ShipperCompleteOrderView.as_view(), name='shipper-complete-order'),
+    
+    # 4. Người mua xác nhận đã nhận hàng
+    path('<int:order_id>/confirm-received/', views.BuyerConfirmReceivedView.as_view(), name='buyer-confirm-received'),
+    
+   path('notifications/', views.NotificationViewSet.as_view({'get': 'list'}), name='notifications-list'),
+    path('notifications/<int:pk>/', views.NotificationViewSet.as_view({'patch': 'partial_update'}), name='notification-detail'), 
 ]

@@ -44,7 +44,7 @@
                         <p class="mb-0 text-muted">Total order:</p>
                         <h5 class="text-success">{{ totalOrder }}</h5>
                         <p class="mb-0 text-muted">Total price:</p>
-                        <h5 class="text-success mb-0">{{ totalPrice | currency:'USD':'symbol':'1.2-2' }}</h5>
+                        <h5 class="text-success mb-0">{{ totalPrice | currency:'VND':'symbol':'1.0-0' }}</h5>
                     </article>
                 </div>
                 
@@ -127,7 +127,7 @@
         <td><a href="#">#{{ o.id }}</a></td>
         <td class="text-body-emphasis">{{ o.receiver_name }}</td>
         <td>{{ o.email }}</td>
-        <td>{{ o.total_price | currency:'USD':'symbol':'1.2-2' }}</td>
+        <td>{{ o.total_price | currency:'VND':'symbol':'1.0-0' }}</td>
         <td>
             <span class="badge rounded-lg rounded-pill alert py-3 px-4 mb-0 border-0 text-capitalize fs-12"
                   [ngClass]="{

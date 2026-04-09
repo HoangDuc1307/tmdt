@@ -44,9 +44,6 @@ toggleChat() {
   product: any = null;
   quantity: number = 1;
   deletedItemIds: number[] = [];
-  USD_TO_VND = 25000;
-
-
   constructor(public authService: AuthService, private router: Router,private chatService: ChatService) {}
 
   ngOnInit(): void {
@@ -187,11 +184,11 @@ this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đón
       this.message = 'Vui lòng thêm đơn hàng vào giỏ!';
       return;
     }
-    // Tính tổng giá USD
-    const totalUSD = this.cartData.items.reduce((total: number, item: any) => total + (item.product_price * item.quantity), 0);
-    // Quy đổi sang VND
-    const totalVND = Math.round(totalUSD * this.USD_TO_VND);
-    console.log('Checkout data:', { total_price: totalVND });
+    const totalVnd = this.cartData.items.reduce(
+      (total: number, item: any) => total + (Number(item.product_price) || 0) * (item.quantity || 0),
+      0
+    );
+    console.log('Checkout (VND):', { total_price: totalVnd });
     // Gọi API checkout mà không truyền dữ liệu
     this.authService.createOrder().subscribe({
       next: (order: any) => {

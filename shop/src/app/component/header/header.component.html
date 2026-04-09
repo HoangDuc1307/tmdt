@@ -200,8 +200,7 @@
 										</div>
 										<div class="">
 											<p class="card-text mb-1">
-												<span class="fs-13px fw-500 text-decoration-line-through pe-3">$39.00</span>
-												<span class="fs-15px fw-bold text-body-emphasis">${{ item.product_price |currency:'VND':'symbol':'1.0-0' }}</span>
+												<span class="fs-15px fw-bold text-body-emphasis">{{ item.product_price | currency:'VND':'symbol':'1.0-0' }}</span>
 												
 											</p>
 											<p class="fw-500 text-body-emphasis">{{ item.product_name }}</p>
@@ -223,7 +222,7 @@
 		<div class="offcanvas-footer flex-wrap">
 			<div class="d-flex align-items-center justify-content-between w-100 mb-5">
 				<span class="text-body-emphasis">Total price:</span>
-				<span class="cart-total fw-bold text-body-emphasis">{{ cartTotal | currency:'VND':'symbol':'1.0-20' }}</span>
+				<span class="cart-total fw-bold text-body-emphasis">{{ cartTotal | currency:'VND':'symbol':'1.0-0' }}</span>
 			</div>
  <button type="button" class="btn btn-outline-dark my-5" (click)="onUpdateCart()">Update Cart</button>
 			<a (click)="onCheckout()" class="btn btn-dark w-100 mb-7" title="Check Out">Check Out</a>

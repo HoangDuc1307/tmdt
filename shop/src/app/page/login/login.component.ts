@@ -4,13 +4,13 @@ import { FooterComponent } from '../../component/footer/footer.component';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../api/auth.service';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
-  imports: [HeaderComponent, FooterComponent, FormsModule, CommonModule]
+  imports: [HeaderComponent, FooterComponent, FormsModule, CommonModule, RouterModule]
 })
 export class LoginComponent {
   username = '';

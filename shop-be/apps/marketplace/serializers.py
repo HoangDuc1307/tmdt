@@ -3,6 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from .models import Listing, UserReport, Transaction, UserProfile, ReportEvidence, ListingImage
+from apps.products.models import Product
 
 
 # Xử lý ảnh bài đăng
@@ -16,13 +17,24 @@ class ListingImageSerializer(serializers.ModelSerializer):
 class ListingSerializer(serializers.ModelSerializer):
     seller_username = serializers.CharField(source='seller.username', read_only=True)
     images = ListingImageSerializer(many=True, read_only=True)
+    preview_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Listing
         fields = [
             'id', 'title', 'description', 'price', 'status', 
-            'seller_username', 'reject_reason', 'images', 'created_at'
+            'seller_username', 'reject_reason', 'images', 'preview_image', 'created_at'
         ]
+
+    def get_preview_image(self, obj):
+        # Fallback ảnh: lấy ảnh sản phẩm tương ứng khi Listing chưa có ListingImage
+        product = Product.objects.filter(
+            seller=obj.seller,
+            name=obj.title
+        ).order_by('-id').first()
+        if product and product.image:
+            return product.image
+        return None
 
 
 # Thông tin User - Gom cả số gậy (cảnh báo) và lý do khóa từ Profile vào cho dễ quản lý

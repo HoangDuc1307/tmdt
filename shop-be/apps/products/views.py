@@ -117,9 +117,10 @@ class ProductListAllView(APIView):
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
+    queryset = Category.objects.all().order_by('-id')
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class = None
     
 
 class ProductsByCategoryView(APIView):

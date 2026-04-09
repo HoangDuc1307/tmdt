@@ -17,10 +17,9 @@ export class CategoryComponent implements OnInit {
     categories: any[] = [];
     filteredCategories: any[] = [];
     category: any = {
+        id: null,
         name: '',
-        slug: '',
-        description: '',
-        parent: null
+        description: ''
     };
     loading = false;
     error = '';
@@ -113,21 +112,28 @@ export class CategoryComponent implements OnInit {
         } else {
             this.filteredCategories = this.categories.filter(category =>
                 category && category.name && category.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                category && category.description && category.description.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                category && category.slug && category.slug.toLowerCase().includes(this.searchTerm.toLowerCase())
+                category && category.description && category.description.toLowerCase().includes(this.searchTerm.toLowerCase())
             );
         }
     }
 
+    private buildCategoryPayload() {
+        return {
+            name: (this.category?.name || '').trim(),
+            description: (this.category?.description || '').trim()
+        };
+    }
+
     createCategory() {
-        if (!this.category.name || !this.category.description) {
-            this.error = 'Name and description are required';
+        const payload = this.buildCategoryPayload();
+        if (!payload.name) {
+            this.error = 'Name is required';
             return;
         }
 
         this.loading = true;
         this.error = '';
-        this.authService.createCategory(this.category).subscribe({
+        this.authService.createCategory(payload).subscribe({
             next: (data) => {
                 if (!Array.isArray(this.categories)) {
                     this.categories = [];
@@ -140,16 +146,23 @@ export class CategoryComponent implements OnInit {
             },
             error: (error) => {
                 console.error('Error creating category:', error);
-                this.error = 'Failed to create category';
+                this.error = typeof error?.error === 'object'
+                    ? Object.entries(error.error).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ')
+                    : 'Failed to create category';
                 this.loading = false;
             }
         });
     }
 
     updateCategory(categoryId: number) {
+        const payload = this.buildCategoryPayload();
+        if (!payload.name) {
+            this.error = 'Name is required';
+            return;
+        }
         this.loading = true;
         this.error = '';
-        this.authService.updateCategory(categoryId, this.category).subscribe({
+        this.authService.updateCategory(categoryId, payload).subscribe({
             next: (data) => {
                 if (!Array.isArray(this.categories)) {
                     this.categories = [];
@@ -163,7 +176,9 @@ export class CategoryComponent implements OnInit {
             },
             error: (error) => {
                 console.error('Error updating category:', error);
-                this.error = 'Failed to update category';
+                this.error = typeof error?.error === 'object'
+                    ? Object.entries(error.error).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`).join(' | ')
+                    : 'Failed to update category';
                 this.loading = false;
             }
         });
@@ -198,10 +213,9 @@ export class CategoryComponent implements OnInit {
 
     resetForm() {
         this.category = {
+            id: null,
             name: '',
-            slug: '',
-            description: '',
-            parent: null
+            description: ''
         };
     }
 

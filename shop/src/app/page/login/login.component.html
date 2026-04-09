@@ -27,7 +27,7 @@
                   <label for="user_login_password" class="visually-hidden">Mật khẩu</label>
                   <input type="password" class="form-control" id="user_login_password" placeholder="password" name="user_login_password" required [(ngModel)]="password">
                 </div>
-                <a href="#" class="d-inline-block fs-15 lh-12 mb-7">forgot password?</a>
+                <a routerLink="/reset-password" class="d-inline-block fs-15 lh-12 mb-7">forgot password?</a>
                 <button type="submit" class="btn btn-primary w-100 mb-7">Sign in</button>
                 <div *ngIf="message" class="alert alert-success mt-3">{{ message }}</div>
                 <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>

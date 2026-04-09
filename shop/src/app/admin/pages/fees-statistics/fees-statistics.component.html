@@ -20,6 +20,30 @@
     </div>
 
     <p *ngIf="saveMessage" class="alert alert-success mt-2">✅ {{ saveMessage }}</p>
+    <div class="card rounded-4 p-6 mb-7">
+        <div class="d-flex flex-wrap align-items-end gap-3">
+            <div>
+                <label for="feePercent" class="form-label mb-2 fw-semibold">Phí sàn áp dụng cho Order (%)</label>
+                <input
+                    id="feePercent"
+                    type="number"
+                    class="form-control"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    style="max-width: 220px;"
+                    [(ngModel)]="feePercent"
+                />
+            </div>
+            <button class="btn btn-primary" (click)="updateFeePercent()" [disabled]="updatingFee || feeConfigLoading">
+                {{ updatingFee ? 'Đang cập nhật...' : 'Cập nhật phí sàn' }}
+            </button>
+            <button class="btn btn-outline-secondary" (click)="loadFeeConfig()" [disabled]="updatingFee || feeConfigLoading">
+                {{ feeConfigLoading ? 'Đang tải...' : 'Tải lại cấu hình' }}
+            </button>
+        </div>
+        <p *ngIf="feeConfigMessage" class="mt-3 mb-0 small text-primary">{{ feeConfigMessage }}</p>
+    </div>
 
     <!-- Stats row 1 -->
     <div class="row" *ngIf="stats">

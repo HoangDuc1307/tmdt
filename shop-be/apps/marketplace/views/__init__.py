@@ -18,4 +18,5 @@ from .fees import (
     fee_statistics,
     fee_top_transactions,
     export_fees_report_csv,
+    fee_config,
 )

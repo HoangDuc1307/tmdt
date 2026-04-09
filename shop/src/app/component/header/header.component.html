@@ -90,6 +90,28 @@
 
     
 </div><!-- end chat wrapper -->
+<div class="px-5 d-none d-xl-inline-block dropdown" *ngIf="authService.isLoggedIn()">
+  <a class="position-relative lh-1 color-inherit text-decoration-none dropdown-toggle" href="#"
+    data-bs-toggle="dropdown" aria-expanded="false"
+    (click)="$event.preventDefault(); loadNotifications()">
+    <i class="far fa-bell fs-5"></i>
+    <span *ngIf="unreadCount > 0"
+      class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle mt-4 rounded-circle fs-13px p-0 square"
+      style="--square-size: 18px">{{ unreadCount }}</span>
+  </a>
+  <ul class="dropdown-menu dropdown-menu-end p-0" style="min-width: 320px; max-height: 380px; overflow-y: auto;">
+    <li class="px-4 py-3 border-bottom fw-semibold">Thông báo giao hàng</li>
+    <li *ngIf="notifications.length === 0" class="px-4 py-3 text-muted">Chưa có thông báo</li>
+    <li *ngFor="let notification of notifications" class="border-bottom">
+      <a href="#" class="dropdown-item py-3"
+        [class.fw-semibold]="!notification.is_read"
+        (click)="markNotificationAsRead(notification, $event)">
+        <div class="small">{{ notification.content }}</div>
+        <div class="text-muted small mt-1">{{ notification.created_at_formatted || (notification.created_at | date:'HH:mm dd/MM/yyyy') }}</div>
+      </a>
+    </li>
+  </ul>
+</div>
 <div class="px-5 d-none d-xl-inline-block">
   <a class="position-relative lh-1 color-inherit text-decoration-none" href="#"
 	 (click)="onCartIconClick(); $event.preventDefault();"
@@ -99,7 +121,9 @@
 	<svg class="icon icon-star-light">
 	  <use xlink:href="#icon-shopping-bag-open-light"></use>
 	</svg>
-	<span class="badge bg-dark text-white position-absolute top-0 start-100 translate-middle mt-4 rounded-circle fs-13px p-0 square" style="--square-size: 18px">3</span>
+	<span *ngIf="(cartData?.items?.length || 0) > 0"
+		class="badge bg-dark text-white position-absolute top-0 start-100 translate-middle mt-4 rounded-circle fs-13px p-0 square"
+		style="--square-size: 18px">{{ cartData?.items?.length || 0 }}</span>
   </a>
 </div>
 					<div class="color-modes position-relative ps-5">
@@ -152,7 +176,7 @@
 							<input name="stay-signed-in" type="checkbox" class="form-check-input rounded-0 me-3" id="staySignedIn">
 							<label class="custom-control-label text-body" for="staySignedIn">Stay signed in</label>
 						</div>
-						<a href="#" class="text-secondary">Forgot your password?</a>
+						<a routerLink="/reset-password" class="text-secondary" data-bs-dismiss="modal">Forgot your password?</a>
 					</div>
 					<button type="submit" value="Login" class="btn btn-dark btn-hover-bg-primary btn-hover-border-primary w-100">Log In</button>
 					<div *ngIf="message" class="alert alert-success mt-3">{{ message }}</div>
@@ -209,9 +233,9 @@
 								</td>
 								<td class="align-middle p-0">
 									<div class="input-group position-relative shop-quantity">
-										<a href="#" class="shop-down position-absolute z-index-2" (click)="decreaseQuantity(item)"><i class="far fa-minus"></i></a>
+										<a href="#" class="shop-down position-absolute z-index-2" (click)="decreaseQuantity(item); $event.preventDefault()"><i class="far fa-minus"></i></a>
 										<input name="number[]" type="number" class="form-control form-control-sm px-6 py-4 fs-6 text-center border-0" [value]="item.tempQuantity" required="">
-										<a href="#" class="shop-up position-absolute z-index-2" (click)="increaseQuantity(item)"><i class="far fa-plus"></i>
+										<a href="#" class="shop-up position-absolute z-index-2" (click)="increaseQuantity(item); $event.preventDefault()"><i class="far fa-plus"></i>
 										</a>
 									</div>
 								</td>

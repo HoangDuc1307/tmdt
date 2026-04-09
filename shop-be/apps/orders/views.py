@@ -29,6 +29,21 @@ from .serializers import NotificationSerializer
 PURCHASED_ORDER_STATUSES = ('paid', 'shipped', 'delivered', 'confirmed_received')
 
 
+def _deduct_stock_for_order(order):
+    """Chỉ trừ kho khi đơn chuyển sang paid."""
+    items = list(order.items.select_related('product').all())
+
+    for item in items:
+        product = item.product
+        if item.quantity > product.quantity:
+            raise ValueError(f"Sản phẩm '{product.name}' đã hết hàng hoặc không đủ số lượng")
+
+    for item in items:
+        product = item.product
+        product.quantity -= item.quantity
+        product.save(update_fields=['quantity'])
+
+
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -105,9 +120,10 @@ class CheckoutView(APIView):
 class PayOrderView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @transaction.atomic
     def post(self, request, order_id):
         user = request.user
-        order = get_object_or_404(Order, id=order_id, user=user)
+        order = get_object_or_404(Order.objects.select_for_update(), id=order_id, user=user)
 
         if order.status != 'pending':
             return Response({"error": "Đơn hàng đã thanh toán hoặc không hợp lệ"}, status=400)
@@ -119,17 +135,10 @@ class PayOrderView(APIView):
                     status=400,
                 )
 
-        # Kiểm tra tồn kho trước khi trừ
-        for item in order.items.all():
-            product = item.product
-            if item.quantity > product.quantity:
-                return Response({"error": f"Sản phẩm '{product.name}' đã hết hàng hoặc không đủ số lượng"}, status=400)
-
-        # Nếu đủ hàng, mới trừ tồn kho
-        for item in order.items.all():
-            product = item.product
-            product.quantity -= item.quantity
-            product.save()
+        try:
+            _deduct_stock_for_order(order)
+        except ValueError as e:
+            return Response({"error": str(e)}, status=400)
 
         order.status = 'paid'
         order.save()
@@ -264,6 +273,7 @@ class VNPayPaymentView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class VNPayReturnView(APIView):
+    @transaction.atomic
     def get(self, request):
         print("[VNPay Callback] Đã nhận callback từ VNPay")
         params = request.query_params.dict()
@@ -282,8 +292,13 @@ class VNPayReturnView(APIView):
         print("[VNPay Callback] vnp_secure_hash (from VNPay):", vnp_secure_hash)
         if secure_hash == vnp_secure_hash:
             order_id = params.get('vnp_TxnRef')
-            order = Order.objects.filter(id=order_id).first()
+            order = Order.objects.select_for_update().filter(id=order_id).first()
             if order and params.get('vnp_ResponseCode') == '00':
+                if order.status == 'pending':
+                    try:
+                        _deduct_stock_for_order(order)
+                    except ValueError as e:
+                        return Response({"message": str(e)}, status=400)
                 order.status = 'paid'
                 order.save()
                 return Response({"message": "Thanh toán thành công", "order_id": order.id})
@@ -301,6 +316,7 @@ class VNPayIPNView(APIView):
     Trả format {RspCode, Message} để VNPay kết thúc/retry.
     """
 
+    @transaction.atomic
     def get(self, request):
         params = request.query_params.dict()
         if not params:
@@ -317,11 +333,15 @@ class VNPayIPNView(APIView):
             return Response({"RspCode": "97", "Message": "Invalid signature"}, status=200)
 
         order_id = params.get('vnp_TxnRef')
-        order = Order.objects.filter(id=order_id).first()
+        order = Order.objects.select_for_update().filter(id=order_id).first()
         if not order:
             return Response({"RspCode": "01", "Message": "Order not found"}, status=200)
 
         if params.get('vnp_ResponseCode') == '00' and order.status != 'paid':
+            try:
+                _deduct_stock_for_order(order)
+            except ValueError:
+                return Response({"RspCode": "02", "Message": "Insufficient stock"}, status=200)
             order.status = 'paid'
             order.save()
 
@@ -372,6 +392,7 @@ class MomoReturnView(APIView):
     Xác thực chữ ký, cập nhật đơn hàng rồi redirect về Angular.
     """
 
+    @transaction.atomic
     def get(self, request):
         params = request.query_params.dict()
         print("[MoMo Return] params:", params)
@@ -386,13 +407,12 @@ class MomoReturnView(APIView):
         order_id = extract_django_order_id(params)
 
         if error_code == "0" and order_id:
-            order = Order.objects.filter(id=order_id).first()
+            order = Order.objects.select_for_update().filter(id=order_id).first()
             if order and order.status == 'pending':
-                for item in order.items.all():
-                    product = item.product
-                    if item.quantity <= product.quantity:
-                        product.quantity -= item.quantity
-                        product.save()
+                try:
+                    _deduct_stock_for_order(order)
+                except ValueError:
+                    return HttpResponseRedirect(f"{frontend_base}/paid?momo=fail&reason=insufficient_stock")
                 order.status = 'paid'
                 order.save()
                 try:
@@ -412,6 +432,7 @@ class MomoNotifyView(APIView):
     IPN: MoMo gọi server-to-server (POST) để xác nhận giao dịch.
     """
 
+    @transaction.atomic
     def post(self, request):
         try:
             body = request.data
@@ -428,13 +449,12 @@ class MomoNotifyView(APIView):
         order_id = extract_django_order_id(body)
 
         if error_code == "0" and order_id:
-            order = Order.objects.filter(id=order_id).first()
+            order = Order.objects.select_for_update().filter(id=order_id).first()
             if order and order.status == 'pending':
-                for item in order.items.all():
-                    product = item.product
-                    if item.quantity <= product.quantity:
-                        product.quantity -= item.quantity
-                        product.save()
+                try:
+                    _deduct_stock_for_order(order)
+                except ValueError:
+                    return Response({"errorCode": 2, "message": "Insufficient stock"})
                 order.status = 'paid'
                 order.save()
 

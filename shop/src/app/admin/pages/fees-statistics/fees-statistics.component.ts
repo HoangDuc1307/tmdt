@@ -23,11 +23,16 @@ export class FeesStatisticsComponent implements OnInit, OnDestroy {
   topTransactions: any[] = [];
   savingReport = false;
   saveMessage = '';
+  feePercent = 10;
+  feeConfigLoading = false;
+  updatingFee = false;
+  feeConfigMessage = '';
   chartDays = 7;
   private chart?: Chart;
 
   // Khởi tạo trang, load toàn bộ số liệu phí sàn
   ngOnInit(): void {
+    this.loadFeeConfig();
     this.load();
   }
 
@@ -55,6 +60,9 @@ export class FeesStatisticsComponent implements OnInit, OnDestroy {
     ).subscribe(({ stats, ts, top }) => {
       if (stats) {
         this.stats = { ...this.stats, ...stats };
+        if (typeof stats.order_fee_percent === 'number') {
+          this.feePercent = stats.order_fee_percent;
+        }
       }
       if (ts) {
         this.ts = {
@@ -71,6 +79,50 @@ export class FeesStatisticsComponent implements OnInit, OnDestroy {
   onChartDaysChange(): void {
     this.chartDays = Number(this.chartDays);
     this.load();
+  }
+
+  loadFeeConfig(): void {
+    this.feeConfigLoading = true;
+    this.feeConfigMessage = '';
+    this.adminService.getFeeConfig().pipe(
+      finalize(() => {
+        this.feeConfigLoading = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: (res) => {
+        this.feePercent = Number(res?.fee_percent ?? 10);
+      },
+      error: () => {
+        this.feeConfigMessage = 'Không tải được cấu hình phí sàn.';
+      },
+    });
+  }
+
+  updateFeePercent(): void {
+    const value = Number(this.feePercent);
+    if (Number.isNaN(value) || value < 0 || value > 100) {
+      this.feeConfigMessage = 'Phí sàn phải trong khoảng 0-100%.';
+      return;
+    }
+
+    this.updatingFee = true;
+    this.feeConfigMessage = '';
+    this.adminService.updateFeeConfig(value).pipe(
+      finalize(() => {
+        this.updatingFee = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: (res) => {
+        this.feePercent = Number(res?.fee_percent ?? value);
+        this.feeConfigMessage = 'Cập nhật % phí sàn thành công.';
+        this.load();
+      },
+      error: (err) => {
+        this.feeConfigMessage = err?.error?.error || 'Cập nhật % phí sàn thất bại.';
+      },
+    });
   }
 
   // Cấu hình biểu đồ cột (Bar Chart) hiển thị Phí sàn & Doanh thu

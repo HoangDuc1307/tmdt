@@ -17,6 +17,7 @@ export class PaidComponent implements OnInit {
   orderItems: any[] = [];
   userProfile: any = null;
   message: string = '';
+  confirmingReceived = false;
   constructor(private authservice: AuthService, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
@@ -38,5 +39,30 @@ export class PaidComponent implements OnInit {
     } else {
       this.message = 'Không tìm thấy đơn hàng.';
     }
+  }
+
+  onConfirmReceived() {
+    if (!this.order?.id) {
+      this.message = 'Không tìm thấy đơn hàng để xác nhận.';
+      return;
+    }
+    if (this.order.status !== 'delivered') {
+      this.message = 'Đơn hàng chưa ở trạng thái đã giao.';
+      return;
+    }
+    if (this.confirmingReceived) return;
+
+    this.confirmingReceived = true;
+    this.authservice.confirmOrderReceived(this.order.id).subscribe({
+      next: (res: any) => {
+        this.message = res?.message || 'Xác nhận nhận hàng thành công.';
+        this.order.status = 'confirmed_received';
+        this.confirmingReceived = false;
+      },
+      error: (err: any) => {
+        this.message = err?.error?.error || 'Không thể xác nhận nhận hàng.';
+        this.confirmingReceived = false;
+      }
+    });
   }
 }

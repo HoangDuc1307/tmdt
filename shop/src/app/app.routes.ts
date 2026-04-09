@@ -3,6 +3,7 @@ import { CanActivateFn, Router, Routes } from '@angular/router';
 import { HomeComponent } from './page/home.component';
 import { LoginComponent } from './page/login/login.component';
 import { RegisterComponent } from './page/register/register.component';
+import { ResetPasswordComponent } from './page/reset-password/reset-password.component';
 import { ProductComponent } from './product/product.component';
 import { ProductManageComponent } from './seller/product-manage/product-manage.component';
 import { AddProductComponent } from './seller/product-manage/add-product/add_product.component';
@@ -41,6 +42,7 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
   { path: 'detail/:id', component: ProductComponent },
   { path: 'seller/manage', component: ProductManageComponent },
   { path: 'add_product', component: AddProductComponent },

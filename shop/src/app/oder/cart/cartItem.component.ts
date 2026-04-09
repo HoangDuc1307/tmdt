@@ -39,7 +39,14 @@ export class CartItemComponent implements OnInit {
 
   get cartTotal(): number {
     if (!this.cartData?.items) return 0;
-    return this.cartData.items.reduce((total: number, item: any) => total + (item.product_price * item.quantity), 0);
+    return this.cartData.items.reduce(
+      (total: number, item: any) => total + (item.product_price * this.getEffectiveQuantity(item)),
+      0
+    );
+  }
+
+  private getEffectiveQuantity(item: any): number {
+    return Number(item?.tempQuantity ?? item?.quantity ?? 0);
   }
 
   increaseQuantity(item: any) {
@@ -63,40 +70,56 @@ export class CartItemComponent implements OnInit {
   }
 
   onUpdateCart() {
-    if (!this.cartData?.items) return;
-    let updateCount = 0;
-    const totalItems = this.cartData.items.length + this.deletedItemIds.length;
+    this.saveCartChanges((hasError: boolean) => {
+      this.reloadCart(hasError);
+    });
+  }
+
+  private saveCartChanges(onDone: (hasError: boolean) => void) {
+    if (!this.cartData?.items) {
+      onDone(false);
+      return;
+    }
+    let completedOps = 0;
     let hasError = false;
-    // Xóa các item đã chọn
+    const totalOps = this.deletedItemIds.length + this.cartData.items.length;
+
+    if (totalOps === 0) {
+      onDone(false);
+      return;
+    }
+
+    const finishOne = () => {
+      completedOps++;
+      if (completedOps === totalOps) {
+        this.deletedItemIds = [];
+        onDone(hasError);
+      }
+    };
+
     for (const id of this.deletedItemIds) {
       this.authService.deleteCartItem(id).subscribe({
-        next: () => {
-          updateCount++;
-          if (updateCount === totalItems) this.reloadCart(hasError);
-        },
+        next: () => finishOne(),
         error: () => {
-          updateCount++;
           hasError = true;
-          if (updateCount === totalItems) this.reloadCart(hasError);
+          finishOne();
         }
       });
     }
-    // Cập nhật số lượng các item còn lại
+
     for (const item of this.cartData.items) {
-      this.authService.updateCartItem(item.id, item.tempQuantity).subscribe({
+      const nextQty = this.getEffectiveQuantity(item);
+      this.authService.updateCartItem(item.id, nextQty).subscribe({
         next: () => {
-          updateCount++;
-          if (updateCount === totalItems) this.reloadCart(hasError);
+          item.quantity = nextQty;
+          finishOne();
         },
         error: () => {
-          updateCount++;
           hasError = true;
-          if (updateCount === totalItems) this.reloadCart(hasError);
+          finishOne();
         }
       });
     }
-    // Xóa danh sách đã xóa sau khi gửi
-    this.deletedItemIds = [];
   }
 
   reloadCart(hasError: boolean) {
@@ -136,27 +159,33 @@ export class CartItemComponent implements OnInit {
       this.message = 'Vui lòng thêm đơn hàng vào giỏ!';
       return;
     }
-    const totalVnd = this.cartData.items.reduce(
-      (total: number, item: any) => total + (Number(item.product_price) || 0) * (item.quantity || 0),
-      0
-    );
-    console.log('Checkout (VND):', { total_price: totalVnd });
-    // Gọi API checkout mà không truyền dữ liệu
-    this.authService.createOrder().subscribe({
-      next: (order: any) => {
-        // Lưu orderId vào localStorage (xử lý cả trường hợp trả về order.order.id hoặc order.id)
-        if (order.order && order.order.id) {
-          localStorage.setItem('lastOrderId', order.order.id);
-        } else if (order.id) {
-          localStorage.setItem('lastOrderId', order.id);
-        }
-        // Chuyển hướng sang trang checkout
-        window.location.href = '/checkout';
-      },
-      error: (err: any) => {
-        console.error('Checkout error:', err);
-        this.message = err?.error?.error || 'Có lỗi khi tạo đơn hàng!';
+    this.saveCartChanges((hasError: boolean) => {
+      if (hasError) {
+        this.message = 'Có lỗi khi cập nhật giỏ hàng trước checkout!';
+        return;
       }
+      const totalVnd = this.cartData.items.reduce(
+        (total: number, item: any) => total + (Number(item.product_price) || 0) * this.getEffectiveQuantity(item),
+        0
+      );
+      console.log('Checkout (VND):', { total_price: totalVnd });
+      // Gọi API checkout mà không truyền dữ liệu
+      this.authService.createOrder().subscribe({
+        next: (order: any) => {
+          // Lưu orderId vào localStorage (xử lý cả trường hợp trả về order.order.id hoặc order.id)
+          if (order.order && order.order.id) {
+            localStorage.setItem('lastOrderId', order.order.id);
+          } else if (order.id) {
+            localStorage.setItem('lastOrderId', order.id);
+          }
+          // Chuyển hướng sang trang checkout
+          window.location.href = '/checkout';
+        },
+        error: (err: any) => {
+          console.error('Checkout error:', err);
+          this.message = err?.error?.error || 'Có lỗi khi tạo đơn hàng!';
+        }
+      });
     });
   }
 }

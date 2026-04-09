@@ -1,147 +1,275 @@
 <main id="content" class="wrapper layout-page">
     <section class="z-index-2 position-relative pb-2 mb-12">
-        <div class="bg-body-secondary mb-3">
-            <div class="container">
-                <nav class="py-4 lh-30px" aria-label="breadcrumb">
-                    <ol class="breadcrumb justify-content-center py-1 mb-0">
-                        <li class="breadcrumb-item"><a title="Home" href="/">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">{{ product?.name }}</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-    </section>
 
-    <section class="container pt-6 pb-13 pb-lg-20" data-animated-id="2" *ngIf="product">
-        <div class="row">
-            <div class="col-md-6 pe-lg-13">
-                <img [src]="product.image ? product.image : 'assets/images/products/giay.jpg'" width="540" height="720"
-                    class="h-auto lazy-image" [alt]="product.name">
-            </div>
-            <div class="col-md-6 pt-md-0 pt-10">
-                <p class="d-flex align-items-center mb-6">
-                    <ng-container
-                        *ngIf="product.discount_percent > 0 && product.current_price < product.price; else normalPrice">
-                        <span
-                            class="text-decoration-line-through">{{product.price | currency:'VND':'symbol':'1.0-0'}}</span>
-                        <span
-                            class="fs-18px text-body-emphasis ps-6 fw-bold">{{product.current_price | currency:'VND':'symbol':'1.0-0'}}</span>
-                        <span
-                            class="badge text-bg-primary fs-6 fw-semibold ms-7 px-6 py-3">{{product.discount_percent}}%</span>
-                    </ng-container>
-                    <ng-template #normalPrice>
-                        <span
-                            class="fs-18px text-body-emphasis fw-bold">{{product.price | currency:'VND':'symbol':'1.0-0'}}</span>
-                    </ng-template>
-                </p>
-                <h1 class="mb-4 pb-2 fs-4">{{product.name}}</h1>
-                <div class="d-flex align-items-center fs-15px mb-6">
-                    <p class="mb-0 fw-semibold text-body-emphasis">4.86 </p>
-                    <div class="d-flex align-items-center fs-12px justify-content-center mb-0 px-6 rating-result">
-                        <div class="rating"></div>
-                    </div>
-                    <a href="#" class="border-start ps-6 text-body">Read 2947 reviews</a>
-                </div>
-                <p class="fs-15px">{{ product.description }}</p>
-                <p class="text-body-emphasis fw-semibold mb-6">Quantity: {{product.quantity}} </p>
+<div class="bg-body-secondary mb-3">
+    <div class="container">
+        <nav class="py-4 lh-30px" aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center py-1 mb-0">
+                <li class="breadcrumb-item"><a title="Home" href="/">Home</a></li>
                 
-                <div class="input-group position-relative w-100 input-group-lg mb-6">
-                    <a href="#"
-                        class="shop-down position-absolute translate-middle-y top-50 start-0 ps-7 product-info-2-minus"
-                        (click)="decreaseQuantity(); $event.preventDefault()"><i class="far fa-minus"></i></a>
-                    <input name="number" type="number" id="number"
-                        class="product-info-2-quantity form-control w-100 px-6 text-center" [(ngModel)]="quantity"
-                        min="1" [max]="product.quantity" required="">
-                    <a href="#"
-                        class="shop-up position-absolute translate-middle-y top-50 end-0 pe-7 product-info-2-plus"
-                        (click)="increaseQuantity(); $event.preventDefault()"><i class="far fa-plus"></i></a>
-                </div>
-
-                <div class="form-check mb-2 pb-4">
-                    <input type="radio" id="buy1" name="quality" class="me-4 form-check-input product-info-input" checked>
-                    <label for="buy1" class="text-body-emphasis form-check-label">
-                        Mua 1 -
-                        <ng-container *ngIf="product.discount_percent > 0 && product.current_price < product.price; else buyOneNormal">
-                            <span class="text-decoration-line-through mx-3 text-body">{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
-                            <span class="fw-bold">{{ product.current_price | currency:'VND':'symbol':'1.0-0' }}</span>
-                            <span class="badge badge-primary fs-12px border text-primary fw-bold ms-4">-{{ product.discount_percent }}%</span>
-                        </ng-container>
-                        <ng-template #buyOneNormal>
-                            <span class="fw-bold">{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
-                        </ng-template>
-                    </label>
-                </div>
-
-                <div class="d-grid gap-2">
-                    <button type="button"
-                        class="btn btn-lg btn-dark w-100 btn-hover-bg-primary btn-hover-border-primary"
-                        (click)="addToCart()">
-                        Add To Cart
-                    </button>
-                    
-                    <button type="button" 
-                        class="btn btn-lg btn-outline-dark w-100"
-                        (click)="openChatWithSeller()">
-                        <i class="bi bi-chat-dots me-2"></i> Chat với người bán
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section *ngIf="!product">
-        <div class="container">
-            <p>Product not found.</p>
-        </div>
-    </section>
-
-    <div *ngIf="message" class="alert alert-info mt-3 mx-container">{{ message }}</div>
-
-    <section class="container pt-15 pb-15 pt-lg-17 pb-lg-20" data-animated-id="4">
-        <div class="text-center">
-            <h2 class="mb-12">You may also like</h2>
-        </div>
-        <div class="row" *ngIf="pagedRelatedProducts.length > 0; else noRelated">
-            <div class="col-sm-6 col-lg-4 col-xl-3 mb-4" *ngFor="let item of pagedRelatedProducts">
-                <div class="card card-product grid-2 bg-transparent border-0">
-                    <figure class="card-img-top position-relative mb-7 overflow-hidden">
-                        <a [routerLink]="['/detail', item.id]" class="hover-zoom-in d-block" [title]="item.name">
-                            <img [src]="item.image ? item.image : 'assets/images/products/giay.jpg'" class="img-fluid w-100"
-                                [alt]="item.name" width="330" height="440">
-                        </a>
-                    </figure>
-                    <div class="card-body text-center p-0">
-                        <span
-                            class="d-flex align-items-center price text-body-emphasis fw-bold justify-content-center mb-3 fs-6">
-                            <ins class="text-decoration-none">{{item.price | currency:'VND':'symbol':'1.0-0'}}</ins>
-                        </span>
-                        <h4 class="product-title card-title text-primary-hover text-body-emphasis fs-15px fw-500 mb-3">
-                            <a class="text-decoration-none text-reset"
-                                [routerLink]="['/detail', item.id]">{{ item.name }}</a>
-                        </h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <ng-template #noRelated>
-            <div class="text-center text-muted">Không có sản phẩm liên quan.</div>
-        </ng-template>
-
-        <nav class="d-flex mt-4 justify-content-center" *ngIf="totalRelatedPages > 1">
-            <ul class="pagination m-0">
-                <li class="page-item" [class.disabled]="currentRelatedPage === 1">
-                    <a class="page-link" href="#" (click)="goToRelatedPage(currentRelatedPage - 1); $event.preventDefault()"
-                        aria-label="Previous">&laquo;</a>
-                </li>
-                <li class="page-item" *ngFor="let page of [].constructor(totalRelatedPages); let i = index"
-                    [class.active]="currentRelatedPage === (i+1)">
-                    <a class="page-link" href="#" (click)="goToRelatedPage(i+1); $event.preventDefault()">{{i+1}}</a>
-                </li>
-                <li class="page-item" [class.disabled]="currentRelatedPage === totalRelatedPages">
-                    <a class="page-link" href="#" (click)="goToRelatedPage(currentRelatedPage + 1); $event.preventDefault()"
-                        aria-label="Next">&raquo;</a>
-                </li>
-            </ul>
+                <li class="breadcrumb-item active" aria-current="page">{{ product?.name }}</li>
+            </ol>
         </nav>
-    </section>
+    </div>
+</div>
+</section>
+<section class="container pt-6 pb-13 pb-lg-20" data-animated-id="2" *ngIf="product">
+<div class="row ">
+<div class="col-md-6 pe-lg-13">
+    <img [src]="product.image ? product.image : 'assets/images/products/giay.jpg'" width="540" height="720" class="h-auto lazy-image" [alt]="product.name">
+</div>
+<div class="col-md-6 pt-md-0 pt-10">
+     <p class="d-flex align-items-center mb-6">
+<span class="fs-18px text-body-emphasis fw-bold">
+    {{ (product.current_price ? product.current_price : product.price) | currency:'VND':'symbol':'1.0-0' }}
+</span>
+</p>
+    <h1 class="mb-4 pb-2 fs-4">{{product.name}}</h1>
+<div class="d-flex align-items-center flex-wrap fs-15px mb-6 gap-2">
+    <ng-container *ngIf="reviews.length > 0">
+  <p class="mb-0 fw-semibold text-body-emphasis">Đánh giá</p>
+    <div class="d-flex align-items-center fs-12px rating-result">
+        <app-star-rating [rating]="averageProductRating" [readonly]="true"></app-star-rating>
+        <span class="text-muted ms-2 small">{{ averageProductRating | number:'1.1-1' }}/5</span>
+    </div>
+    <a href="#reviews-section" class="border-start border-secondary ps-6 text-body">Xem {{ reviews.length }} đánh giá</a>
+</ng-container>
+</div>
+    <p class="fs-15px">{{ product.description }}</p>
+    <p class="text-body-emphasis fw-semibold mb-6">Quantity: {{product.quantity}} </p>
+    <div class="input-group position-relative w-100 input-group-lg">
+        <a href="#" class="shop-down position-absolute translate-middle-y top-50 start-0 ps-7 product-info-2-minus" (click)="decreaseQuantity(); $event.preventDefault()"><i class="far fa-minus"></i></a>
+        <input name="number" type="number" id="number" class="product-info-2-quantity form-control w-100 px-6 text-center" [(ngModel)]="quantity" min="1" [max]="product.quantity" required="">
+        <a href="#" class="shop-up position-absolute translate-middle-y top-50 end-0 pe-7 product-info-2-plus" (click)="increaseQuantity(); $event.preventDefault()"><i class="far fa-plus"></i></a>
+    </div>
+    <button type="button" class="btn btn-lg btn-dark mb-7 mt-7 w-100 btn-hover-bg-primary btn-hover-border-primary" (click)="addToCart()">Add To Cart</button>
+</div>
+</div>
+
+<!-- Reviews Section -->
+<div class="container py-10" id="reviews-section">
+<hr class="mb-8">
+<h3 class="mb-6 fw-bold">Đánh giá</h3>
+
+<!-- Tab Buttons (Angular-based, no Bootstrap JS needed) -->
+<div class="d-flex gap-3 mb-8">
+<button class="btn fw-bold px-6 py-3"
+  [class.btn-dark]="activeReviewTab === 'product'"
+  [class.btn-outline-secondary]="activeReviewTab !== 'product'"
+  (click)="activeReviewTab = 'product'">
+  📦 Sản phẩm ({{ reviews.length }})
+</button>
+<button class="btn fw-bold px-6 py-3"
+  [class.btn-dark]="activeReviewTab === 'seller'"
+  [class.btn-outline-secondary]="activeReviewTab !== 'seller'"
+  (click)="activeReviewTab = 'seller'">
+  🏪 Người bán ({{ sellerReviews.length }})
+</button>
+</div>
+
+<!-- Product Reviews -->
+<div *ngIf="activeReviewTab === 'product'">
+<div *ngFor="let review of reviews" class="border rounded p-6 mb-4 bg-white shadow-sm">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
+           style="width:42px;height:42px;font-size:1.1rem;">
+        {{ review.user_detail?.username?.charAt(0)?.toUpperCase() }}
+      </div>
+      <div>
+        <div class="fw-semibold">{{ review.user_detail?.username }}</div>
+        <small class="text-muted">{{ review.created_at | date:'dd/MM/yyyy HH:mm' }}</small>
+      </div>
+    </div>
+    <app-star-rating [rating]="review.rating" [readonly]="true"></app-star-rating>
+  </div>
+  <p class="mb-0">{{ review.comment }}</p>
+</div>
+<div *ngIf="reviews.length === 0" class="text-center text-muted py-8">
+  <p class="fs-5">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+</div>
+
+<!-- Form viết đánh giá sản phẩm -->
+<div class="border rounded p-6 mt-6 bg-light" *ngIf="authService.isLoggedIn()">
+  <h5 class="mb-5 fw-bold">✍️ Viết đánh giá của bạn</h5>
+  <div class="mb-4">
+    <label class="form-label fw-semibold">Số sao đánh giá:</label>
+    <div><app-star-rating [(rating)]="newReviewRating"></app-star-rating></div>
+  </div>
+  <div class="mb-4">
+    <label for="reviewComment" class="form-label fw-semibold">Bình luận:</label>
+    <textarea id="reviewComment" class="form-control" rows="3" [(ngModel)]="newReviewComment"
+      placeholder="Chia sẻ trải nghiệm của bạn..."></textarea>
+  </div>
+  <button class="btn btn-dark px-8" (click)="submitReview()" [disabled]="submittingReview">
+    {{ submittingReview ? 'Đang gửi...' : 'Gửi đánh giá' }}
+  </button>
+</div>
+<div class="alert alert-info mt-4" *ngIf="!authService.isLoggedIn()">
+  Vui lòng <a routerLink="/login" class="fw-bold">Đăng nhập</a> để viết đánh giá.
+</div>
+</div>
+
+<!-- Seller Reviews -->
+<div *ngIf="activeReviewTab === 'seller'">
+<div class="border rounded p-5 mb-6 bg-warning-subtle d-flex flex-wrap align-items-start justify-content-between gap-3">
+  <div>
+    <strong class="fs-5">🏪 Người bán: {{ product?.seller_name }}</strong>
+    <p class="mb-0 text-muted mt-1">Đánh giá dịch vụ và thái độ phục vụ của người bán</p>
+  </div>
+  <div class="d-flex flex-column align-items-stretch align-items-md-end gap-2">
+    <button type="button" class="btn btn-sm btn-outline-danger"
+      *ngIf="authService.isLoggedIn() && canReportSeller"
+      (click)="openSellerReportModal()">
+      Báo cáo người bán
+    </button>
+    <small class="text-muted" *ngIf="authService.isLoggedIn() && !canReportSeller && product?.seller">
+      Bạn không thể báo cáo chính shop của mình.
+    </small>
+    <a *ngIf="!authService.isLoggedIn()" routerLink="/login" class="small fw-semibold">Đăng nhập để báo cáo</a>
+  </div>
+</div>
+
+<div *ngFor="let review of sellerReviews" class="border rounded p-6 mb-4 bg-white shadow-sm">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="rounded-circle bg-info d-flex align-items-center justify-content-center text-white fw-bold"
+           style="width:42px;height:42px;font-size:1.1rem;">
+        {{ review.user_detail?.username?.charAt(0)?.toUpperCase() }}
+      </div>
+      <div>
+        <div class="fw-semibold">{{ review.user_detail?.username }}</div>
+        <small class="text-muted">{{ review.created_at | date:'dd/MM/yyyy HH:mm' }}</small>
+      </div>
+    </div>
+    <app-star-rating [rating]="review.rating" [readonly]="true"></app-star-rating>
+  </div>
+  <p class="mb-0">{{ review.comment }}</p>
+</div>
+<div *ngIf="sellerReviews.length === 0" class="text-center text-muted py-8">
+  <p class="fs-5">Người bán này chưa có đánh giá nào.</p>
+</div>
+
+<!-- Form đánh giá người bán -->
+<div class="border rounded p-6 mt-6 bg-light" *ngIf="authService.isLoggedIn()">
+  <h5 class="mb-5 fw-bold">✍️ Đánh giá người bán: {{ product?.seller_name }}</h5>
+  <div class="mb-4">
+    <label class="form-label fw-semibold">Mức độ hài lòng:</label>
+    <div><app-star-rating [(rating)]="newSellerReviewRating"></app-star-rating></div>
+  </div>
+  <div class="mb-4">
+    <label for="sellerReviewComment" class="form-label fw-semibold">Nhận xét:</label>
+    <textarea id="sellerReviewComment" class="form-control" rows="3" [(ngModel)]="newSellerReviewComment"
+      placeholder="Người bán phục vụ bạn thế nào?"></textarea>
+  </div>
+  <button class="btn btn-info text-white px-8" (click)="submitSellerReview()" [disabled]="submittingSellerReview">
+    {{ submittingSellerReview ? 'Đang gửi...' : 'Gửi đánh giá người bán' }}
+  </button>
+</div>
+<div class="alert alert-info mt-4" *ngIf="!authService.isLoggedIn()">
+  Vui lòng <a routerLink="/login" class="fw-bold">Đăng nhập</a> để đánh giá người bán.
+</div>
+
+<!-- Modal: báo cáo người bán → cùng UserReport với admin -->
+<div *ngIf="reportModalOpen" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
+  style="z-index: 2000; background: rgba(0,0,0,0.45);"
+  (click)="closeSellerReportModal()">
+  <div class="bg-white rounded shadow-lg w-100 p-4 p-md-5"
+    style="max-width: 560px; max-height: 90vh; overflow-y: auto;"
+    (click)="$event.stopPropagation()"
+    role="dialog" aria-modal="true" aria-labelledby="sellerReportTitle">
+    <h5 id="sellerReportTitle" class="fw-bold mb-2">Báo cáo người bán</h5>
+    <p class="text-muted small mb-4">
+      Nội dung được gửi cho quản trị viên xử lý. Người bán:
+      <strong>{{ product?.seller_name }}</strong>
+    </p>
+
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Loại vi phạm</label>
+      <select class="form-select" [(ngModel)]="reportCategory" name="reportCategory">
+        <option *ngFor="let c of reportCategoryOptions" [value]="c.key">{{ c.label }}</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="reportReason" class="form-label fw-semibold">Mô tả chi tiết <span class="text-danger">*</span></label>
+      <textarea id="reportReason" class="form-control" rows="4" [(ngModel)]="reportReason" name="reportReason"
+        placeholder="Mô tả cụ thể (thời gian, mã đơn nếu có…)"></textarea>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold">Ảnh minh chứng (tối đa 5, tuỳ chọn)</label>
+      <input type="file" class="form-control" accept="image/*" multiple (change)="onReportImagesSelected($event)">
+      <ul class="list-unstyled small mt-2 mb-0" *ngIf="reportImageFiles.length">
+        <li *ngFor="let f of reportImageFiles; let i = index" class="d-flex justify-content-between align-items-center py-1 border-bottom">
+          <span class="text-truncate me-2">{{ f.name }}</span>
+          <button type="button" class="btn btn-link btn-sm text-danger p-0" (click)="removeReportImageAt(i)">Xóa</button>
+        </li>
+      </ul>
+    </div>
+    <div class="alert alert-danger py-2 small mb-3" *ngIf="reportError">{{ reportError }}</div>
+    <div class="d-flex gap-2 justify-content-end flex-wrap">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeSellerReportModal()" [disabled]="reportSubmitting">Hủy</button>
+      <button type="button" class="btn btn-danger" (click)="submitSellerReport()" [disabled]="reportSubmitting">
+        {{ reportSubmitting ? 'Đang gửi...' : 'Gửi báo cáo' }}
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+</section>
+<section *ngIf="!product">
+<div class="container">
+    <p>Product not found.</p>
+</div>
+</section>
+<div *ngIf="message" class="alert alert-info mt-3">{{ message }}</div>
+<section class="container pt-15 pb-15 pt-lg-17 pb-lg-20" data-animated-id="4">
+<div class="text-center"><h2 class="mb-12">You may also like</h2></div>
+<div class="row related-products-grid g-4" *ngIf="pagedRelatedProducts.length > 0; else noRelated">
+    <div class="col-sm-6 col-lg-4 col-xl-3 d-flex" *ngFor="let item of pagedRelatedProducts">
+        <div class="card card-product grid-2 bg-transparent border-0 w-100">
+            <figure class="card-img-top position-relative mb-7 overflow-hidden">
+                <a
+                    class="related-product-thumb-link hover-zoom-in d-block h-100 text-decoration-none"
+                    [title]="item.name"
+                    [attr.aria-label]="'Xem chi tiết ' + item.name"
+                    href="#"
+                    tabindex="0"
+                    role="link"
+                    (click)="goToRelatedDetail(item.id, $event)"
+                    (keydown.enter)="goToRelatedDetail(item.id, $event)">
+                    <img [src]="item.image ? item.image : 'assets/images/products/giay.jpg'" class="img-fluid w-100 related-product-img" [alt]="item.name" width="330" height="440" (error)="onRelatedImgError($event)">
+                </a>
+            </figure>
+            <div class="card-body text-center p-0 w-100">
+                <span class="d-flex align-items-center price text-body-emphasis fw-bold justify-content-center mb-3 fs-6">
+                    <ins class="text-decoration-none">{{item.price | currency:'VND':'symbol':'1.0-0'}}</ins>
+                </span>
+                <h4 class="product-title card-title text-primary-hover text-body-emphasis fs-15px fw-500 mb-3">
+                    <a class="text-decoration-none text-reset" [routerLink]="['/detail', item.id]">{{ item.name }}</a>
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+<ng-template #noRelated>
+    <div class="text-center text-muted">Không có sản phẩm liên quan.</div>
+</ng-template>
+<nav class="d-flex mt-4 justify-content-center" *ngIf="totalRelatedPages > 1">
+    <ul class="pagination m-0">
+        <li class="page-item" [class.disabled]="currentRelatedPage === 1">
+            <a class="page-link" href="#" (click)="goToRelatedPage(currentRelatedPage - 1); $event.preventDefault()" aria-label="Previous">&laquo;</a>
+        </li>
+        <li class="page-item" *ngFor="let page of [].constructor(totalRelatedPages); let i = index" [class.active]="currentRelatedPage === (i+1)">
+            <a class="page-link" href="#" (click)="goToRelatedPage(i+1); $event.preventDefault()">{{i+1}}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentRelatedPage === totalRelatedPages">
+            <a class="page-link" href="#" (click)="goToRelatedPage(currentRelatedPage + 1); $event.preventDefault()" aria-label="Next">&raquo;</a>
+        </li>
+    </ul>
+</nav>
+</section>
 </main>
+
+

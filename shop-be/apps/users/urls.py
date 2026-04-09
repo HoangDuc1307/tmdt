@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     RegisterView, LogoutView, CreateAdminView,
     MyProfileView, AllUsersAdminView, AllUserProfilesAdminView,
-    LogoutAndBlacklistRefreshTokenForUserView
+    LogoutAndBlacklistRefreshTokenForUserView, ForgotPasswordView, ResetPasswordView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import CustomTokenObtainPairView
@@ -18,6 +18,8 @@ urlpatterns = [
     path('admin/users/', AllUsersAdminView.as_view(), name='all-users-admin'),
     path('admin/userprofiles/', AllUserProfilesAdminView.as_view(), name='all-userprofiles-admin'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
+    path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
 ]
 
 urlpatterns += [

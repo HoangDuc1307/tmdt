@@ -58,6 +58,13 @@
                             <td><strong>#{{ x.id }}</strong></td>
                             <td>
                                 <div class="d-flex align-items-center flex-nowrap">
+                                    <img
+                                        *ngIf="x.preview_image || x.images?.length"
+                                        [src]="x.images?.length ? x.images[0]?.image : x.preview_image"
+                                        alt="thumbnail"
+                                        class="rounded border"
+                                        style="width: 48px; height: 48px; object-fit: cover;"
+                                    />
                                     <div class="ms-2">
                                         <p class="fw-semibold text-body-emphasis mb-0">{{ x.title }}</p>
                                         <small class="text-muted d-block text-truncate" style="max-width: 250px;">{{ x.description }}</small>
@@ -163,7 +170,14 @@
                             </a>
                         </div>
                         <ng-template #noImage>
-                            <div class="text-muted fst-italic mb-3 fs-14px">Không có hình ảnh đính kèm.</div>
+                            <div *ngIf="currentListing()?.preview_image; else noAnyImage" class="mb-3">
+                                <a [href]="currentListing()?.preview_image" target="_blank" class="border rounded p-1 d-inline-block bg-white shadow-sm">
+                                    <img [src]="currentListing()?.preview_image" alt="Listing preview" style="max-height: 80px; max-width: 120px; object-fit: cover; border-radius: 4px;">
+                                </a>
+                            </div>
+                            <ng-template #noAnyImage>
+                                <div class="text-muted fst-italic mb-3 fs-14px">Không có hình ảnh đính kèm.</div>
+                            </ng-template>
                         </ng-template>
 
                         <h6 class="fw-bold mt-2 mb-2">Mô tả sản phẩm:</h6>

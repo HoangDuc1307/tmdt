@@ -60,16 +60,10 @@ class OrderItem(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        is_new = not self.pk
         super().save(*args, **kwargs)
         
         # Cập nhật tổng tiền đơn hàng
         self.order.update_total_price()
-
-        # Chỉ trừ kho khi tạo mới item
-        if is_new:
-            self.product.quantity -= self.quantity
-            self.product.save()
 class Notification(models.Model):
     # Người nhận thông báo (người mua hoặc người bán)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')

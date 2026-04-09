@@ -155,7 +155,13 @@
                         </div>
                     </div>
                     <div class="h-25 pt-8">
-                        <button class="btn btn-primary" routerLink="/">Continue Shopping</button>
+                        <button class="btn btn-primary"
+                                (click)="onConfirmReceived()"
+                                [disabled]="confirmingReceived || order?.status === 'confirmed_received'">
+                            {{ order?.status === 'confirmed_received'
+                                ? 'Đã nhận thành công'
+                                : (confirmingReceived ? 'Đang xác nhận...' : 'Nhận thành công') }}
+                        </button>
                     </div>
                 </div>
             </div>

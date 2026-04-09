@@ -14,8 +14,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
-from ..models import AdminReportSnapshot, AdminAuditLog
-from ..revenue_utils import fee_statistics_payload, build_tx_day_map, combined_totals, top_transactions_mixed
+from ..models import AdminReportSnapshot, AdminAuditLog, PlatformFeeConfig
+from ..revenue_utils import fee_statistics_payload, build_tx_day_map, combined_totals, top_transactions_mixed, current_order_fee_rate
 from decimal import Decimal
 
 
@@ -55,7 +55,50 @@ def fee_statistics(request):
     if days > 90:
         days = 90
 
-    return Response(fee_statistics_payload(days))
+    payload = fee_statistics_payload(days)
+    payload['order_fee_percent'] = float((current_order_fee_rate() * Decimal('100')).quantize(Decimal('0.01')))
+    return Response(payload)
+
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAdminUser])
+def fee_config(request):
+    """
+    Xem/chỉnh % phí sàn áp dụng cho Order.
+    """
+    config = PlatformFeeConfig.get_solo()
+
+    if request.method == 'GET':
+        return Response({
+            'fee_percent': float(config.fee_percent),
+            'updated_at': config.updated_at,
+            'updated_by': config.updated_by.username if config.updated_by else None,
+        })
+
+    raw_percent = request.data.get('fee_percent')
+    try:
+        fee_percent = Decimal(str(raw_percent))
+    except Exception:
+        return Response({'error': 'fee_percent không hợp lệ'}, status=400)
+
+    if fee_percent < 0 or fee_percent > 100:
+        return Response({'error': 'fee_percent phải trong khoảng 0-100'}, status=400)
+
+    config.fee_percent = fee_percent.quantize(Decimal('0.01'))
+    config.updated_by = request.user
+    config.save(update_fields=['fee_percent', 'updated_by', 'updated_at'])
+
+    AdminAuditLog.objects.create(
+        admin=request.user,
+        action='UPDATE_PLATFORM_FEE_PERCENT',
+        details=f"Cập nhật phí sàn cho Order: {config.fee_percent}%",
+        target_model='PlatformFeeConfig',
+        target_id=str(config.id),
+    )
+    return Response({
+        'message': 'Cập nhật % phí sàn thành công',
+        'fee_percent': float(config.fee_percent),
+    })
 
 
 @api_view(['GET'])

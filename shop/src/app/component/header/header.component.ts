@@ -1,9 +1,11 @@
-import { Component, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../api/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '../../api/chat.service'; // Đảm bảo đúng đường dẫn
+import { NotificationService } from '../../api/notification.service';
+import { Subscription } from 'rxjs';
 // Đi ra khỏi 'header', đi ra khỏi 'component', rồi mới vào 'chat'
 import { ChatComponent } from '../../chat/chat.component';
 
@@ -14,7 +16,7 @@ import { ChatComponent } from '../../chat/chat.component';
   imports: [RouterModule, CommonModule, FormsModule, ChatComponent],
   standalone:true
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   // Trong header.component.ts
 isChatOpen: boolean = false; 
 
@@ -34,7 +36,8 @@ toggleChat() {
   }
   searchTerm: string = '';
   @Output() search = new EventEmitter<string>();
-  unreadCount: number = 1;
+  unreadCount: number = 0;
+  notifications: any[] = [];
   cartItemCount: number = 0;
   username = '';
   password = '';
@@ -44,7 +47,15 @@ toggleChat() {
   product: any = null;
   quantity: number = 1;
   deletedItemIds: number[] = [];
-  constructor(public authService: AuthService, private router: Router,private chatService: ChatService) {}
+  private chatStateSub?: Subscription;
+  private notificationPollerId: ReturnType<typeof setInterval> | null = null;
+
+  constructor(
+    public authService: AuthService,
+    private router: Router,
+    private chatService: ChatService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
   // Chỉ gọi lấy giỏ hàng khi đã đăng nhập
@@ -64,14 +75,68 @@ toggleChat() {
     });
   }
  // Sửa dòng 69 trong header.component.ts
-this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đóng mở ngoặc đơn
+this.chatStateSub = this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đóng mở ngoặc đơn
   this.isChatOpen = state.open;
   if (state.open) {
     console.log('Header: Khung chat đã mở cho seller:', state.recipientId);
   }
 });
 
+if (this.authService.isLoggedIn()) {
+  this.loadNotifications();
+  this.startNotificationPolling();
 }
+
+}
+  ngOnDestroy(): void {
+    this.chatStateSub?.unsubscribe();
+    this.stopNotificationPolling();
+  }
+
+  loadNotifications() {
+    this.notificationService.getNotifications().subscribe({
+      next: (res: any) => {
+        const list = Array.isArray(res) ? res : (res?.results || []);
+        this.notifications = list;
+        this.unreadCount = list.filter((n: any) => !n.is_read).length;
+      },
+      error: () => {
+        this.notifications = [];
+        this.unreadCount = 0;
+      }
+    });
+  }
+
+  markNotificationAsRead(notification: any, event?: Event) {
+    if (event) {
+      event.preventDefault();
+    }
+    if (!notification || notification.is_read) {
+      return;
+    }
+    this.notificationService.markAsRead(notification.id).subscribe({
+      next: () => {
+        notification.is_read = true;
+        this.unreadCount = Math.max(0, this.unreadCount - 1);
+      }
+    });
+  }
+
+  private startNotificationPolling() {
+    this.stopNotificationPolling();
+    this.notificationPollerId = setInterval(() => {
+      if (this.authService.isLoggedIn()) {
+        this.loadNotifications();
+      }
+    }, 30000);
+  }
+
+  private stopNotificationPolling() {
+    if (this.notificationPollerId) {
+      clearInterval(this.notificationPollerId);
+      this.notificationPollerId = null;
+    }
+  }
   goToMessages() {
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/messages']);
@@ -81,7 +146,14 @@ this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đón
   }
   get cartTotal(): number {
     if (!this.cartData?.items) return 0;
-    return this.cartData.items.reduce((total: number, item: any) => total + (item.product_price * item.quantity), 0);
+    return this.cartData.items.reduce(
+      (total: number, item: any) => total + (item.product_price * this.getEffectiveQuantity(item)),
+      0
+    );
+  }
+
+  private getEffectiveQuantity(item: any): number {
+    return Number(item?.tempQuantity ?? item?.quantity ?? 0);
   }
 
   increaseQuantity(item: any) {
@@ -111,40 +183,56 @@ this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đón
   }
 
   onUpdateCart() {
-    if (!this.cartData?.items) return;
-    let updateCount = 0;
-    const totalItems = this.cartData.items.length + this.deletedItemIds.length;
+    this.saveCartChanges((hasError: boolean) => {
+      this.reloadCart(hasError);
+    });
+  }
+
+  private saveCartChanges(onDone: (hasError: boolean) => void) {
+    if (!this.cartData?.items) {
+      onDone(false);
+      return;
+    }
+    let completedOps = 0;
     let hasError = false;
-    // Xóa các item đã chọn
+    const totalOps = this.deletedItemIds.length + this.cartData.items.length;
+
+    if (totalOps === 0) {
+      onDone(false);
+      return;
+    }
+
+    const finishOne = () => {
+      completedOps++;
+      if (completedOps === totalOps) {
+        this.deletedItemIds = [];
+        onDone(hasError);
+      }
+    };
+
     for (const id of this.deletedItemIds) {
       this.authService.deleteCartItem(id).subscribe({
-        next: () => {
-          updateCount++;
-          if (updateCount === totalItems) this.reloadCart(hasError);
-        },
+        next: () => finishOne(),
         error: () => {
-          updateCount++;
           hasError = true;
-          if (updateCount === totalItems) this.reloadCart(hasError);
+          finishOne();
         }
       });
     }
-    // Cập nhật số lượng các item còn lại
+
     for (const item of this.cartData.items) {
-      this.authService.updateCartItem(item.id, item.tempQuantity).subscribe({
+      const nextQty = this.getEffectiveQuantity(item);
+      this.authService.updateCartItem(item.id, nextQty).subscribe({
         next: () => {
-          updateCount++;
-          if (updateCount === totalItems) this.reloadCart(hasError);
+          item.quantity = nextQty;
+          finishOne();
         },
         error: () => {
-          updateCount++;
           hasError = true;
-          if (updateCount === totalItems) this.reloadCart(hasError);
+          finishOne();
         }
       });
     }
-    // Xóa danh sách đã xóa sau khi gửi
-    this.deletedItemIds = [];
   }
 
   reloadCart(hasError: boolean) {
@@ -184,27 +272,33 @@ this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đón
       this.message = 'Vui lòng thêm đơn hàng vào giỏ!';
       return;
     }
-    const totalVnd = this.cartData.items.reduce(
-      (total: number, item: any) => total + (Number(item.product_price) || 0) * (item.quantity || 0),
-      0
-    );
-    console.log('Checkout (VND):', { total_price: totalVnd });
-    // Gọi API checkout mà không truyền dữ liệu
-    this.authService.createOrder().subscribe({
-      next: (order: any) => {
-        // Lưu orderId vào localStorage (xử lý cả trường hợp trả về order.order.id hoặc order.id)
-        if (order.order && order.order.id) {
-          localStorage.setItem('lastOrderId', order.order.id);
-        } else if (order.id) {
-          localStorage.setItem('lastOrderId', order.id);
-        }
-        // Chuyển hướng sang trang checkout
-        window.location.href = '/checkout';
-      },
-      error: (err: any) => {
-        console.error('Checkout error:', err);
-        this.message = err?.error?.error || 'Có lỗi khi tạo đơn hàng!';
+    this.saveCartChanges((hasError: boolean) => {
+      if (hasError) {
+        this.message = 'Có lỗi khi cập nhật giỏ hàng trước checkout!';
+        return;
       }
+      const totalVnd = this.cartData.items.reduce(
+        (total: number, item: any) => total + (Number(item.product_price) || 0) * this.getEffectiveQuantity(item),
+        0
+      );
+      console.log('Checkout (VND):', { total_price: totalVnd });
+      // Gọi API checkout mà không truyền dữ liệu
+      this.authService.createOrder().subscribe({
+        next: (order: any) => {
+          // Lưu orderId vào localStorage (xử lý cả trường hợp trả về order.order.id hoặc order.id)
+          if (order.order && order.order.id) {
+            localStorage.setItem('lastOrderId', order.order.id);
+          } else if (order.id) {
+            localStorage.setItem('lastOrderId', order.id);
+          }
+          // Chuyển hướng sang trang checkout
+          window.location.href = '/checkout';
+        },
+        error: (err: any) => {
+          console.error('Checkout error:', err);
+          this.message = err?.error?.error || 'Có lỗi khi tạo đơn hàng!';
+        }
+      });
     });
   }
 
@@ -214,12 +308,18 @@ this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đón
         console.log('Đăng xuất thành công:', res.message);
         // Xóa local storage và chuyển hướng về trang chủ
         this.authService.clearLocalStorage();
+        this.notifications = [];
+        this.unreadCount = 0;
+        this.stopNotificationPolling();
         this.router.navigate(['/']);
       },
       error: (err: any) => {
         console.error('Lỗi đăng xuất:', err);
         // Vẫn xóa local storage và chuyển hướng ngay cả khi có lỗi
         this.authService.clearLocalStorage();
+        this.notifications = [];
+        this.unreadCount = 0;
+        this.stopNotificationPolling();
         this.router.navigate(['/']);
       }
     });
@@ -268,7 +368,8 @@ this.chatService.chatState$.subscribe((state: any) => { // Thêm : any và đón
         this.authService.saveTokens(res.access, res.refresh, res.user);
 
         // --- PHẦN TIN NHẮN & GIỎ HÀNG ---
-        this.unreadCount = 1; // Gán tạm là 1 để icon hiện số thông báo ngay lập tức
+        this.loadNotifications();
+        this.startNotificationPolling();
         this.reloadCart(false); // Tiện tay cập nhật luôn giỏ hàng cho đồng bộ
         // -------------------------------
 

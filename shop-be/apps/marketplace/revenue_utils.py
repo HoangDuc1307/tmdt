@@ -13,10 +13,7 @@ from django.utils import timezone
 
 from apps.orders.models import Order
 
-from .models import Transaction
-
-# Cùng tỉ lệ như sample Transaction (setup_project_data: 10%)
-PLATFORM_FEE_RATE_ORDERS = Decimal('10') / Decimal('100')
+from .models import Transaction, PlatformFeeConfig
 
 PAID_ORDER_STATUSES = ('paid', 'shipped', 'delivered')
 
@@ -31,6 +28,16 @@ def _decimal(x: Any) -> Decimal:
 
 def paid_orders_qs():
     return Order.objects.filter(status__in=PAID_ORDER_STATUSES)
+
+
+def current_order_fee_rate() -> Decimal:
+    """
+    Tỉ lệ phí sàn hiện tại cho Order, dạng 0.x (vd 10% -> 0.10).
+    Nếu chưa có config thì fallback 10%.
+    """
+    config = PlatformFeeConfig.objects.order_by('id').first()
+    percent = _decimal(config.fee_percent) if config else Decimal('10')
+    return (percent / Decimal('100')).quantize(Decimal('0.0001'))
 
 
 def transaction_count_since(since_dt) -> int:
@@ -74,7 +81,7 @@ def aggregate_orders(
         qs = qs.filter(created_at__date__gte=start_date)
     agg = qs.aggregate(revenue=Sum('total_price'), n=Count('id'))
     rev = _decimal(agg['revenue'])
-    fee = (rev * PLATFORM_FEE_RATE_ORDERS).quantize(Decimal('0.01'))
+    fee = (rev * current_order_fee_rate()).quantize(Decimal('0.01'))
     return rev, fee, int(agg['n'] or 0)
 
 
@@ -113,7 +120,7 @@ def build_tx_day_map(start_date: date, include_orders: bool = True) -> dict[str,
             .values('d')
             .annotate(c=Count('id'), revenue=Sum('total_price'))
         )
-        rate = float(PLATFORM_FEE_RATE_ORDERS)
+        rate = float(current_order_fee_rate())
         for row in orders_qs:
             key = row['d'].isoformat()
             rev = float(row['revenue'] or 0)
@@ -177,7 +184,7 @@ def top_transactions_mixed(limit: int = 5) -> list[dict]:
             )
         )
 
-    rate = PLATFORM_FEE_RATE_ORDERS
+    rate = current_order_fee_rate()
     for o in paid_orders_qs().select_related('user').order_by('-total_price')[: limit * 2]:
         rev = _decimal(o.total_price)
         fee = (rev * rate).quantize(Decimal('0.01'))

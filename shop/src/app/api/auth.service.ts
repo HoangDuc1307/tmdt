@@ -18,6 +18,14 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/users/login/`, data);
   }
 
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/users/forgot-password/`, { email });
+  }
+
+  resetPassword(payload: { uid: string; token: string; new_password: string; confirm_password: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/users/reset-password/`, payload);
+  }
+
   // Đăng xuất (blacklist refresh token)
   logout(): Observable<any> {
     const refreshToken = localStorage.getItem('refresh_token');
@@ -240,6 +248,11 @@ export class AuthService {
   payOrder(orderId: number): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.post(`${this.apiUrl}/orders/${orderId}/pay/`, {}, { headers });
+  }
+
+  confirmOrderReceived(orderId: number): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${this.apiUrl}/orders/${orderId}/confirm-received/`, {}, { headers });
   }
 
   initMomoPayment(orderId: number): Observable<{ pay_url: string }> {

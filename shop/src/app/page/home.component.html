@@ -24,12 +24,16 @@
             </ul>
 <ul class="list-unstyled d-flex align-items-center list-inline mb-0">
                 <li class="list-inline-item me-0 w-100 w-lg-auto">
-                    <select class="form-select w-100 w-lg-auto" name="orderby" (change)="onSortChange($event)">
+                    <select class="form-select w-100 w-lg-auto" name="orderby" [(ngModel)]="sortOrder" (change)="onSortChange($event)">
                         <option value="">Default sorting</option>
                         <option value="price">Sort by price: low to high</option>
                         <option value="price-desc">Sort by price: high to low</option>
                     </select>
-                </li><li class="list-inline-item d-none d-lg-block ms-7">
+                </li><li class="list-inline-item d-none d-lg-block ms-3">
+                    <a (click)="clearAllFilters()" class="btn btn-outline-secondary">
+                        Clear
+                    </a>
+                </li><li class="list-inline-item d-none d-lg-block ms-3">
                     <a (click)="onFilter()" class="btn btn-hover-border-primary btn-hover-bg-primary btn-hover-text-light btn-dark">
                             
                         Filter</a>
@@ -79,21 +83,19 @@
 </a>
 <div class="position-absolute product-flash z-index-2 ">
     <span class="badge badge-product-flash" [ngClass]="{
-    'alert-warning': product.status === 'Sale' || product.status === 'sale' || product.status === 'SALE',
     'alert-danger': product.status === 'Out of stock' || product.status === 'out of stock' || product.status === 'Out_of_stock' || product.status === 'out_of_stock',
     'alert-success': product.status === 'new' || product.status === 'New' || product.status === 'NEW',
-    'alert-info': product.status !== 'Sale' && product.status !== 'sale' && product.status !== 'SALE' && product.status !== 'Out of stock' && product.status !== 'out of stock' && product.status !== 'Out_of_stock' && product.status !== 'out_of_stock' && product.status !== 'new' && product.status !== 'New' && product.status !== 'NEW'
+    'alert-info': product.status !== 'Out of stock' && product.status !== 'out of stock' && product.status !== 'Out_of_stock' && product.status !== 'out_of_stock' && product.status !== 'new' && product.status !== 'New' && product.status !== 'NEW'
   }"
   [style.background-color]="product.status === 'out_of_stock' ? '#dc3545' : 
-                           (product.status === 'new' || product.status === 'New' || product.status === 'NEW') ? '#198754' : 
-                           (product.status === 'Sale' || product.status === 'sale' || product.status === 'SALE') ? '#ffc107' : ''"
+                           (product.status === 'new' || product.status === 'New' || product.status === 'NEW') ? '#198754' : ''"
   [style.color]="product.status === 'out_of_stock' ? 'white' : 
-                (product.status === 'new' || product.status === 'New' || product.status === 'NEW') ? 'white' : 
-                (product.status === 'Sale' || product.status === 'sale' || product.status === 'SALE') ? 'black' : ''">
+                (product.status === 'new' || product.status === 'New' || product.status === 'NEW') ? 'white' : ''">
   {{ product.status === 'out_of_stock' ? 'Out of stock' : 
      product.status === 'new' ? 'New' : 
      product.status === 'New' ? 'New' : 
-     product.status === 'NEW' ? 'New' : product.status }}
+     product.status === 'NEW' ? 'New' :
+     (product.status === 'sale' || product.status === 'Sale' || product.status === 'SALE') ? 'Regular' : product.status }}
 </span></div>
 <div class="position-absolute d-flex z-index-2 product-actions  horizontal">
     <a  class="text-body-emphasis bg-body bg-dark-hover text-light-hover rounded-circle square product-action shadow-sm add_to_cart"
@@ -116,7 +118,6 @@
 
 	   <div class="card-body text-center p-0">
 <span class="d-flex align-items-center price text-body-emphasis fw-bold justify-content-center mb-3 fs-6">
-    <del class="text-body fw-500 me-4 fs-13px" *ngIf="product.status === 'Sale' || product.status === 'sale' || product.status === 'SALE'">{{product.price | currency:'VND':'symbol':'1.0-0'}}</del>
   {{ product.current_price ? (product.current_price | currency:'VND':'symbol':'1.0-0') : (product.price | currency:'VND':'symbol':'1.0-0') }}</span>
 
 	   <h4 class="product-title card-title text-primary-hover text-body-emphasis fs-15px fw-500 mb-1"><a class="text-decoration-none text-reset" [routerLink]="['/detail', product.id]">{{ product.name }}</a></h4>
@@ -163,25 +164,23 @@
             
 
 
-                <a href="/" title="Skin care" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center text-uppercase fs-14px fw-semibold letter-spacing-5 active">
+                <a href="#" title="Skin care"
+                    (click)="loadProductsByCategory(''); $event.preventDefault()"
+                    class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center text-uppercase fs-14px fw-semibold letter-spacing-5"
+                    [class.active]="!selectedCategoryId">
                     <span class="text-hover-underline me-2">All Products</span>
                     </a>
                 <div id="cat_skin-care" class="collapse show" data-bs-parent="#widget_product_category">
-                    <ul class="navbar-nav nav-submenu ps-8"><li class="nav-item">
-                                <a class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" href="#" (click)="loadProductsByCategory('1'); $event.preventDefault()"><span class="text-hover-underline">Iphone</span></a>
-                            </li><li class="nav-item">
-                                <a class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" href="#" (click)="loadProductsByCategory('2'); $event.preventDefault()"><span class="text-hover-underline">Mac</span></a>
-                            </li><li class="nav-item">
-                                <a class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" href="#" (click)="loadProductsByCategory('3'); $event.preventDefault()"><span class="text-hover-underline">Ipad</span></a>
-                            </li><li class="nav-item">
-                                <a class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" href="#" (click)="loadProductsByCategory('4'); $event.preventDefault()"><span class="text-hover-underline">Watch</span></a>
-                            </li><li class="nav-item">
-                                <a class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" href="#" (click)="loadProductsByCategory('8'); $event.preventDefault()"><span class="text-hover-underline">Headphone</span></a>
-                            </li><li class="nav-item">
-                                <a class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" href="#" (click)="loadProductsByCategory('9'); $event.preventDefault()"><span class="text-hover-underline">Speakers</span></a>
-                            </li><li class="nav-item">
-                                <a class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" href="#" (click)="loadProductsByCategory('11'); $event.preventDefault()"><span class="text-hover-underline">Accessory</span></a>
-                            </li></ul>
+                    <ul class="navbar-nav nav-submenu ps-8">
+                        <li class="nav-item" *ngFor="let category of categoryOptions">
+                            <a class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"
+                                href="#"
+                                (click)="loadProductsByCategory(category.id); $event.preventDefault()"
+                                [class.active]="selectedCategoryId === category.id">
+                                <span class="text-hover-underline">{{ category.name }}</span>
+                            </a>
+                        </li>
+                    </ul>
                 </div></li>
   
     
@@ -191,13 +190,13 @@
 <h4 class="widget-title fs-5 mb-6">Hightlight</h4>
 <ul class="navbar-nav navbar-nav-cate" id="widget_product_hightlight">
     <li class="nav-item">
-            <a href="#" title="Best Seller" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">Best Seller</span></a></li>
+            <a href="#" title="All status" (click)="filterByStatus(''); $event.preventDefault()" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="!selectedStatus"><span class="text-hover-underline">All</span></a></li>
     <li class="nav-item">
-            <a href="#" title="New Arrivals" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">New Arrivals</span></a></li>
+            <a href="#" title="New Arrivals" (click)="filterByStatus('new'); $event.preventDefault()" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="selectedStatus === 'new'"><span class="text-hover-underline">New Arrivals</span></a></li>
     <li class="nav-item">
-            <a href="#" title="Sale" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">Sale</span></a></li>
+            <a href="#" title="Out of stock" (click)="filterByStatus('out_of_stock'); $event.preventDefault()" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="selectedStatus === 'out_of_stock'"><span class="text-hover-underline">Out of stock</span></a></li>
     <li class="nav-item">
-            <a href="#" title="Hot Items" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">Hot Items</span></a></li>
+            <a href="#" title="Regular" (click)="filterByStatus('regular'); $event.preventDefault()" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="selectedStatus === 'regular'"><span class="text-hover-underline">Regular</span></a></li>
     
 </ul>
 </div>
@@ -205,19 +204,19 @@
 <h4 class="widget-title fs-5 mb-6">Price</h4>
 <ul class="navbar-nav navbar-nav-cate" id="widget_product_price">
     <li class="nav-item">
-        <a href="#" (click)="filterByPriceRange(0, 1000000); $event.preventDefault()" title="0 - 1,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">0 - 1,000,000</span></a>
+        <a href="#" (click)="filterByPriceRange(0, 1000000); $event.preventDefault()" title="0 - 1,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="isPriceRangeActive(0, 1000000)"><span class="text-hover-underline">0 - 1,000,000</span></a>
     </li>
     <li class="nav-item">
-        <a href="#" (click)="filterByPriceRange(1000000, 5000000); $event.preventDefault()" title="1,000,000 - 5,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">1,000,000 - 5,000,000</span></a>
+        <a href="#" (click)="filterByPriceRange(1000000, 5000000); $event.preventDefault()" title="1,000,000 - 5,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="isPriceRangeActive(1000000, 5000000)"><span class="text-hover-underline">1,000,000 - 5,000,000</span></a>
     </li>
     <li class="nav-item">
-        <a href="#" (click)="filterByPriceRange(5000000, 10000000); $event.preventDefault()" title="5,000,000 - 10,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">5,000,000 - 10,000,000</span></a>
+        <a href="#" (click)="filterByPriceRange(5000000, 10000000); $event.preventDefault()" title="5,000,000 - 10,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="isPriceRangeActive(5000000, 10000000)"><span class="text-hover-underline">5,000,000 - 10,000,000</span></a>
     </li>
     <li class="nav-item">
-        <a href="#" (click)="filterByPriceRange(10000000, 20000000); $event.preventDefault()" title="10,000,000 - 20,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">10,000,000 - 20,000,000</span></a>
+        <a href="#" (click)="filterByPriceRange(10000000, 20000000); $event.preventDefault()" title="10,000,000 - 20,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="isPriceRangeActive(10000000, 20000000)"><span class="text-hover-underline">10,000,000 - 20,000,000</span></a>
     </li>
     <li class="nav-item">
-        <a href="#" (click)="filterByPriceRange(20000000, null); $event.preventDefault()" title="Trên 20,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center"><span class="text-hover-underline">Trên 20,000,000</span></a>
+        <a href="#" (click)="filterByPriceRange(20000000, null); $event.preventDefault()" title="Trên 20,000,000" class="text-reset position-relative d-block text-decoration-none text-body-emphasis-hover d-flex align-items-center" [class.active]="isPriceRangeActive(20000000, null)"><span class="text-hover-underline">Trên 20,000,000</span></a>
     </li>
 </ul>
 </div>

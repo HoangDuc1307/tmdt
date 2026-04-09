@@ -108,3 +108,23 @@ class AdminAuditLog(models.Model):
 
     def __str__(self):
         return f"{self.admin.username if self.admin else 'Unknown'} - {self.action} ({self.timestamp})"
+
+
+class PlatformFeeConfig(models.Model):
+    """
+    Cấu hình % phí sàn áp dụng cho Order của shop.
+    Transaction của marketplace vẫn dùng platform_fee đã lưu trên từng giao dịch.
+    """
+    fee_percent = models.DecimalField(max_digits=5, decimal_places=2, default=10)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def get_solo(cls):
+        obj = cls.objects.order_by('id').first()
+        if obj:
+            return obj
+        return cls.objects.create(fee_percent=10)
+
+    def __str__(self):
+        return f"Platform fee: {self.fee_percent}%"

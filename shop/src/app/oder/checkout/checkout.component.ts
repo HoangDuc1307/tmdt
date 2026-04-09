@@ -22,7 +22,6 @@ export class CheckOutComponent implements OnInit {
       email: ''
     };
     message: string = '';
-    USD_TO_VND = 25000;
     isPaying: boolean = false; // Thêm biến này để chặn double click
     constructor(private authservice: AuthService, private router: Router){}
     
@@ -54,8 +53,8 @@ export class CheckOutComponent implements OnInit {
       this.isPaying = true;
 
       if (window.confirm('Bạn có chắc chắn muốn thanh toán đơn hàng này?')) {
-        const priceVND = Math.round((this.order?.total_price || 0) * this.USD_TO_VND);
-        this.authservice.updateOrderInfo(this.order.id, { total_price: priceVND }).subscribe({
+        const totalVnd = Math.round(Number(this.order?.total_price) || 0);
+        this.authservice.updateOrderInfo(this.order.id, { total_price: totalVnd }).subscribe({
           next: () => {
             this.authservice.payOrder(this.order.id).subscribe({
               next: (res: any) => {
@@ -88,9 +87,9 @@ export class CheckOutComponent implements OnInit {
       if (!window.confirm('Bạn có chắc chắn muốn thanh toán qua MoMo?')) return;
 
       this.isPaying = true;
-      const priceVND = Math.round((this.order?.total_price || 0) * this.USD_TO_VND);
+      const totalVnd = Math.round(Number(this.order?.total_price) || 0);
 
-      this.authservice.updateOrderInfo(this.order.id, { total_price: priceVND }).subscribe({
+      this.authservice.updateOrderInfo(this.order.id, { total_price: totalVnd }).subscribe({
         next: () => {
           this.authservice.initMomoPayment(this.order.id).subscribe({
             next: (res) => {

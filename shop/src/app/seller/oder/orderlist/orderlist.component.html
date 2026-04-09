@@ -57,7 +57,7 @@
   <tr *ngFor="let order of orders">
     <td><a href="#">#{{ order.id }}</a></td>
     <td class="text-body-emphasis">{{ order.receiver_name || ((order.user_profile?.first_name || '') + ' ' + (order.user_profile?.last_name || '')).trim() }}</td>
-    <td>{{ (+order.seller_subtotal || +order.total_price || 0) | currency:'USD':'symbol':'1.2-2' }}</td>
+    <td>{{ (+order.seller_subtotal || +order.total_price || 0) | currency:'VND':'symbol':'1.0-0' }}</td>
     <td>
       <span class="badge rounded-lg rounded-pill alert py-3 px-4 mb-0 border-0 text-capitalize fs-12"
         [ngClass]="{

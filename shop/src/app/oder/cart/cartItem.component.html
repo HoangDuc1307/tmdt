@@ -109,13 +109,13 @@
                 </div>
                 <div class="d-flex align-items-center justify-content-between">
                     <span>Shipping:</span>
-                    <span class="d-block ml-auto text-body-emphasis fw-bold">$0</span>
+                    <span class="d-block ml-auto text-body-emphasis fw-bold">{{ 0 | currency:'VND':'symbol':'1.0-0' }}</span>
                 </div>
             </div>
             <div class="card-footer bg-transparent px-0 pt-5 pb-7 mx-9">
                 <div class="d-flex align-items-center justify-content-between fw-bold mb-7">
                     <span class="text-secondary text-body-emphasis">Total pricre:</span>
-                    <span class="d-block ml-auto text-body-emphasis fs-4 fw-bold">{{ cartTotal | currency:'VND':'symbol':'1.0-20' }}</span>
+                    <span class="d-block ml-auto text-body-emphasis fs-4 fw-bold">{{ cartTotal | currency:'VND':'symbol':'1.0-0' }}</span>
                 </div>
                 <button
   class="btn w-100 btn-dark btn-hover-bg-primary btn-hover-border-primary"

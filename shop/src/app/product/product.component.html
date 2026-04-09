@@ -60,11 +60,16 @@
                 <div class="form-check mb-2 pb-4">
                     <input type="radio" id="buy1" name="quality" class="me-4 form-check-input product-info-input" checked>
                     <label for="buy1" class="text-body-emphasis form-check-label">
-                        Buy 1 -
-                        <span class="text-decoration-line-through mx-3 text-body">$39.00</span>
-                        <span class="fw-bold">{{product.price | currency:'USD':'symbol':'1.2-2'}}</span>
+                        Mua 1 -
+                        <ng-container *ngIf="product.discount_percent > 0 && product.current_price < product.price; else buyOneNormal">
+                            <span class="text-decoration-line-through mx-3 text-body">{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
+                            <span class="fw-bold">{{ product.current_price | currency:'VND':'symbol':'1.0-0' }}</span>
+                            <span class="badge badge-primary fs-12px border text-primary fw-bold ms-4">-{{ product.discount_percent }}%</span>
+                        </ng-container>
+                        <ng-template #buyOneNormal>
+                            <span class="fw-bold">{{ product.price | currency:'VND':'symbol':'1.0-0' }}</span>
+                        </ng-template>
                     </label>
-                    <span class="badge badge-primary fs-12px border text-primary fw-bold ms-4">Saved 10%</span>
                 </div>
 
                 <div class="d-grid gap-2">

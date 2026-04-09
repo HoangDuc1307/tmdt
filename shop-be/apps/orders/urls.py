@@ -11,6 +11,7 @@ urlpatterns = [
     path('<int:order_id>/update-info/', views.UpdateOrderInfoView.as_view(), name='update-order-info'),
     path('<int:order_id>/pay/', views.PayOrderView.as_view(), name='pay-order'),
     path('<int:order_id>/vnpay/', views.VNPayPaymentView.as_view(), name='vnpay-payment'),
+    path('<int:order_id>/momo/', views.MomoPaymentView.as_view(), name='momo-payment'),
     path('admin/orders/', views.AllOrdersAdminView.as_view(), name='all-orders-admin'),
     path('admin/orders/<int:pk>/', views.AdminOrderDetailView.as_view(), name='admin-order-detail'),
 

@@ -50,7 +50,7 @@ export class CheckOutComponent implements OnInit {
     }
 
     payOrder() {
-      if (this.isPaying) return; // Chặn double click
+      if (this.isPaying) return;
       this.isPaying = true;
 
       if (window.confirm('Bạn có chắc chắn muốn thanh toán đơn hàng này?')) {
@@ -77,6 +77,41 @@ export class CheckOutComponent implements OnInit {
       } else {
         this.isPaying = false;
       }
+    }
+
+    payByMomo() {
+      if (this.isPaying) return;
+      if (!this.order?.id) {
+        alert('Không tìm thấy đơn hàng.');
+        return;
+      }
+      if (!window.confirm('Bạn có chắc chắn muốn thanh toán qua MoMo?')) return;
+
+      this.isPaying = true;
+      const priceVND = Math.round((this.order?.total_price || 0) * this.USD_TO_VND);
+
+      this.authservice.updateOrderInfo(this.order.id, { total_price: priceVND }).subscribe({
+        next: () => {
+          this.authservice.initMomoPayment(this.order.id).subscribe({
+            next: (res) => {
+              if (res.pay_url) {
+                window.location.href = res.pay_url;
+              } else {
+                alert('Không nhận được link thanh toán MoMo.');
+                this.isPaying = false;
+              }
+            },
+            error: (err: any) => {
+              alert('Lỗi khởi tạo thanh toán MoMo: ' + (err.error?.error || 'Vui lòng thử lại.'));
+              this.isPaying = false;
+            }
+          });
+        },
+        error: (err: any) => {
+          alert('Có lỗi khi cập nhật giá đơn hàng! ' + (err.error?.error || ''));
+          this.isPaying = false;
+        }
+      });
     }
 
     updateOrderInfo() {

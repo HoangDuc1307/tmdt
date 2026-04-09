@@ -242,6 +242,11 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/orders/${orderId}/pay/`, {}, { headers });
   }
 
+  initMomoPayment(orderId: number): Observable<{ pay_url: string }> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<{ pay_url: string }>(`${this.apiUrl}/orders/${orderId}/momo/`, {}, { headers });
+  }
+
   // Lưu JWT tokens vào localStorage
   saveTokens(accessToken: string, refreshToken: string, userInfo: any): void {
     localStorage.setItem('access_token', accessToken);

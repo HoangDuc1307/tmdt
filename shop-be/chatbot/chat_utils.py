@@ -113,8 +113,115 @@ def prepare_knowledge_base_sync(data_dir="data"):
     return
 
 
-# QUESTION REWRITE 
+# ==================== DB CONTEXT (thay thế RAG khi is_rag_ready=False) ====================
+_PRODUCT_KEYWORDS = [
+    "sản phẩm", "hàng", "giá", "mua", "bán", "có không", "còn không",
+    "danh mục", "loại", "mẫu", "giảm giá", "khuyến mãi", "sale",
+    "đắt", "rẻ", "bao nhiêu tiền", "chất lượng", "thương hiệu",
+    "laptop", "điện thoại", "máy tính", "phụ kiện", "áo", "quần",
+    "giày", "túi", "đồng hồ", "tai nghe", "camera", "tivi", "tủ lạnh",
+]
+
+def _is_product_question(user_message: str) -> bool:
+    lower = user_message.lower()
+    return any(kw in lower for kw in _PRODUCT_KEYWORDS)
+
+
+def fetch_products_by_keyword(keyword: str, limit: int = 15) -> str:
+    """
+    Tìm sản phẩm theo từ khóa trong tên/mô tả/danh mục bằng SQL LIKE.
+    Trả về chuỗi context để nhét vào prompt.
+    """
+    if not os.path.exists(SQLITE_DB_PATH):
+        return ""
+    conn = None
+    try:
+        conn = sqlite3.connect(SQLITE_DB_PATH)
+        cur = conn.cursor()
+        like = f"%{keyword}%"
+        sql = """
+        SELECT p.name, p.description, c.name as category,
+               CASE
+                   WHEN sp.discount_percent IS NOT NULL
+                   AND sp.start_date <= CURRENT_TIMESTAMP
+                   AND sp.end_date >= CURRENT_TIMESTAMP
+                   THEN p.price * (100 - sp.discount_percent) / 100
+                   ELSE p.price
+               END as current_price,
+               COALESCE(sp.discount_percent, 0) as discount_percent,
+               p.quantity
+        FROM products_product p
+        LEFT JOIN products_category c ON p.category_id = c.id
+        LEFT JOIN saleproduct_saleproduct sp ON p.id = sp.product_id
+        WHERE p.is_approved = 1
+          AND (p.name LIKE ? OR p.description LIKE ? OR c.name LIKE ?)
+        LIMIT ?
+        """
+        cur.execute(sql, (like, like, like, limit))
+        rows = cur.fetchall()
+        cur.close()
+
+        if not rows:
+            # Fallback: lấy tất cả sản phẩm approved nếu không khớp từ khóa
+            cur2 = conn.cursor()
+            cur2.execute("""
+            SELECT p.name, p.description, c.name, 
+                   CASE WHEN sp.discount_percent IS NOT NULL
+                        AND sp.start_date <= CURRENT_TIMESTAMP
+                        AND sp.end_date >= CURRENT_TIMESTAMP
+                   THEN p.price * (100 - sp.discount_percent) / 100
+                   ELSE p.price END,
+                   COALESCE(sp.discount_percent, 0), p.quantity
+            FROM products_product p
+            LEFT JOIN products_category c ON p.category_id = c.id
+            LEFT JOIN saleproduct_saleproduct sp ON p.id = sp.product_id
+            WHERE p.is_approved = 1
+            LIMIT ?
+            """, (limit,))
+            rows = cur2.fetchall()
+            cur2.close()
+
+        lines = []
+        for name, desc, cat, price, discount, qty in rows:
+            stock = "Còn hàng" if (qty or 0) > 0 else "Hết hàng"
+            line = (
+                f"- Tên: {name} | Danh mục: {cat} | Giá: {int(price):,}đ"
+                + (f" (giảm {int(discount)}%)" if discount else "")
+                + f" | {stock}"
+                + (f" | Mô tả: {(desc or '')[:80]}" if desc else "")
+            )
+            lines.append(line)
+        return "\n".join(lines)
+    except Exception as e:
+        print(f"[DB Context] Lỗi truy vấn: {e}")
+        return ""
+    finally:
+        if conn:
+            conn.close()
+
+
+# QUESTION REWRITE
+_CONTEXT_DEPENDENT_TERMS = [
+    "nó", "đó", "cái đó", "mẫu đó", "loại đó", "sản phẩm đó",
+    "vậy", "thế", "còn không", "thêm", "nữa", "bao nhiêu",
+    "của nó", "giá đó", "cái này", "cái kia",
+]
+
+def _needs_rewrite(user_message: str, chat_history_parsed: list) -> bool:
+    """Chỉ rewrite khi câu hỏi phụ thuộc ngữ cảnh trước đó."""
+    has_ai_turn = any(isinstance(m, AIMessage) for m in chat_history_parsed)
+    if not has_ai_turn:
+        return False
+    lower = user_message.lower().strip()
+    return any(term in lower for term in _CONTEXT_DEPENDENT_TERMS)
+
+
 def rewrite_user_question(user_message: str, chat_history_parsed: list[BaseMessage], max_turns=3):
+    # Bỏ qua rewrite nếu câu hỏi độc lập — tiết kiệm 1 lần gọi LLM
+    if not _needs_rewrite(user_message, chat_history_parsed):
+        print("DEBUG - Skipping rewrite (standalone question)")
+        return user_message
+
     total_messages = len(chat_history_parsed)
     ai_messages = [msg for msg in chat_history_parsed if isinstance(msg, AIMessage)]
     user_messages = [msg for msg in chat_history_parsed if isinstance(msg, HumanMessage)]
@@ -219,12 +326,16 @@ def get_chatbot_response(user_message: str, chat_history_raw: list, user_id: int
     try:
         user_message_rewritten = rewrite_user_question(user_message, chat_history_parsed)
 
-        # ================= RAG FLOW (MANUAL, SAFE) =================
+        # Chỉ giữ 6 lượt hội thoại gần nhất khi gửi vào LLM (giảm token)
+        system_msgs = [m for m in chat_history_parsed if isinstance(m, SystemMessage)]
+        convo_msgs = [m for m in chat_history_parsed if isinstance(m, (HumanMessage, AIMessage))]
+        trimmed_history = system_msgs + convo_msgs[-6:]
+
+        # ================= RAG FLOW (FAISS embedding) =================
         if is_rag_ready and knowledge_base:
             print("Using RAG mode...")
             retriever = knowledge_base.as_retriever(search_kwargs={"k": 10})
             docs = retriever.invoke(user_message_rewritten)
-
             context_text = "\n\n".join(doc.page_content for doc in docs) if docs else "Không có dữ liệu liên quan."
 
             system_prompt = (
@@ -235,32 +346,50 @@ def get_chatbot_response(user_message: str, chat_history_raw: list, user_id: int
                 "Nếu không có thông tin sản phẩm, hãy gợi ý 1 sản phẩm cùng danh mục, chỉ cung cấp tên và giá. "
                 "Nếu người dùng đồng ý xem thêm, hãy gợi ý 1–2 sản phẩm khác cùng danh mục, không lặp lại sản phẩm cũ."
             )
-
             messages = [
                 SystemMessage(content=system_prompt),
-                *chat_history_parsed,
-                HumanMessage(
-                    content=f"Dữ liệu:\n{context_text}\n\nCâu hỏi: {user_message_rewritten}\n\nChỉ trả lời dựa trên dữ liệu trên."
-                )
+                *trimmed_history,
+                HumanMessage(content=f"Dữ liệu:\n{context_text}\n\nCâu hỏi: {user_message_rewritten}\n\nChỉ trả lời dựa trên dữ liệu trên.")
             ]
-
             llm_response = llm.invoke(messages)
             ai_response = llm_response.content
 
-        # ================= FALLBACK FLOW =================
-        else:
-            print("Using basic LLM mode (no RAG).")
-            if not chat_history_parsed or chat_history_parsed[0].type != "system":
-                chat_history_parsed.insert(
-                    0, SystemMessage(content="Bạn là một trợ lý AI hữu ích và thân thiện. Bạn sẽ trả lời bằng tiếng Việt.")
-                )
-            chat_history_parsed.append(HumanMessage(content=user_message_rewritten))
-            llm_response = llm.invoke(chat_history_parsed)
+        # ================= DB CONTEXT FLOW (thay RAG khi không có embedding) =================
+        elif _is_product_question(user_message_rewritten):
+            print("Using DB context mode (no FAISS, query SQLite directly).")
+            context_text = fetch_products_by_keyword(user_message_rewritten)
+            if not context_text:
+                context_text = "Hiện không có sản phẩm phù hợp trong hệ thống."
+
+            system_prompt = (
+                "Bạn là trợ lý AI tư vấn sản phẩm của shop. "
+                "Chỉ trả lời dựa trên danh sách sản phẩm được cung cấp, không bịa thông tin. "
+                "Trả lời bằng tiếng Việt, ngắn gọn, tập trung vào tên, giá, tình trạng hàng và giảm giá nếu có. "
+                "Nếu không tìm thấy sản phẩm phù hợp, thông báo rõ và gợi ý danh mục khác."
+            )
+            messages = [
+                SystemMessage(content=system_prompt),
+                *trimmed_history,
+                HumanMessage(content=f"Danh sách sản phẩm:\n{context_text}\n\nCâu hỏi: {user_message_rewritten}")
+            ]
+            llm_response = llm.invoke(messages)
             ai_response = llm_response.content
 
+        # ================= FALLBACK FLOW (câu hỏi chung, không về sản phẩm) =================
+        else:
+            print("Using basic LLM mode (no RAG, no product question).")
+            if not trimmed_history or trimmed_history[0].type != "system":
+                trimmed_history.insert(
+                    0, SystemMessage(content="Bạn là một trợ lý AI hữu ích và thân thiện của shop. Bạn sẽ trả lời bằng tiếng Việt.")
+                )
+            trimmed_history.append(HumanMessage(content=user_message_rewritten))
+            llm_response = llm.invoke(trimmed_history)
+            ai_response = llm_response.content
+
+        global_chat_history.append({"role": "human", "content": user_message})
         global_chat_history.append({"role": "ai", "content": ai_response})
-        if len(global_chat_history) > 20:
-            global_chat_history = global_chat_history[-20:]
+        if len(global_chat_history) > 24:
+            global_chat_history = global_chat_history[-24:]
 
         return {"answer": ai_response}
 

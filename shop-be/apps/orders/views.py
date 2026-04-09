@@ -10,6 +10,9 @@ from .serializers import OrderSerializer, OrderUpdateInfoSerializer, SellerOrder
 from apps.cart.models import Cart, CartItem
 from core.vnpay_config import VNPAY_CONFIG
 from core.vnpay import generate_vnpay_url
+from core.momo import create_momo_payment, verify_momo_signature, extract_django_order_id
+from django.http import HttpResponseRedirect
+import os
 import hmac
 import hashlib
 from django.utils.decorators import method_decorator
@@ -323,6 +326,120 @@ class VNPayIPNView(APIView):
             order.save()
 
         return Response({"RspCode": "00", "Message": "Confirm Success"}, status=200)
+
+class MomoPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, order_id):
+        user = request.user
+        order = get_object_or_404(Order, id=order_id, user=user, status='pending')
+
+        for item in order.items.all():
+            if item.product.seller_id == user.id:
+                return Response(
+                    {"error": "Đơn hàng chứa sản phẩm do bạn bán, không thể thanh toán."},
+                    status=400,
+                )
+
+        amount = int(order.total_price)
+        if amount <= 0:
+            return Response({"error": "Số tiền đơn hàng không hợp lệ."}, status=400)
+
+        try:
+            result = create_momo_payment(
+                order_id=order.id,
+                amount=amount,
+                order_info=f"Thanh toan don hang {order.id}",
+            )
+        except Exception as e:
+            print(f"[MoMo] Lỗi gọi API: {e}")
+            return Response({"error": "Không thể kết nối cổng thanh toán MoMo."}, status=502)
+
+        error_code = result.get("errorCode", -1)
+        if error_code != 0:
+            return Response(
+                {"error": result.get("localMessage") or result.get("message", "MoMo lỗi"), "detail": result},
+                status=400,
+            )
+
+        return Response({"pay_url": result.get("payUrl")})
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MomoReturnView(APIView):
+    """
+    MoMo redirect người dùng về đây sau khi thanh toán (GET).
+    Xác thực chữ ký, cập nhật đơn hàng rồi redirect về Angular.
+    """
+
+    def get(self, request):
+        params = request.query_params.dict()
+        print("[MoMo Return] params:", params)
+
+        frontend_base = os.getenv("FRONTEND_URL", "http://localhost:4200")
+
+        if not verify_momo_signature(params):
+            print("[MoMo Return] Sai chữ ký!")
+            return HttpResponseRedirect(f"{frontend_base}/paid?momo=fail&reason=invalid_signature")
+
+        error_code = params.get("errorCode", "-1")
+        order_id = extract_django_order_id(params)
+
+        if error_code == "0" and order_id:
+            order = Order.objects.filter(id=order_id).first()
+            if order and order.status == 'pending':
+                for item in order.items.all():
+                    product = item.product
+                    if item.quantity <= product.quantity:
+                        product.quantity -= item.quantity
+                        product.save()
+                order.status = 'paid'
+                order.save()
+                try:
+                    from .utils import send_payment_email
+                    send_payment_email(order.user, order)
+                except Exception as e:
+                    print("[MoMo] Lỗi gửi email:", e)
+
+            return HttpResponseRedirect(f"{frontend_base}/paid?momo=success&orderId={order_id}")
+
+        return HttpResponseRedirect(f"{frontend_base}/paid?momo=fail&errorCode={error_code}")
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class MomoNotifyView(APIView):
+    """
+    IPN: MoMo gọi server-to-server (POST) để xác nhận giao dịch.
+    """
+
+    def post(self, request):
+        try:
+            body = request.data
+        except Exception:
+            return Response({"message": "Invalid body"}, status=400)
+
+        print("[MoMo Notify] body:", body)
+
+        if not verify_momo_signature(body):
+            print("[MoMo Notify] Sai chữ ký!")
+            return Response({"errorCode": 1, "message": "Invalid signature"})
+
+        error_code = str(body.get("errorCode", "-1"))
+        order_id = extract_django_order_id(body)
+
+        if error_code == "0" and order_id:
+            order = Order.objects.filter(id=order_id).first()
+            if order and order.status == 'pending':
+                for item in order.items.all():
+                    product = item.product
+                    if item.quantity <= product.quantity:
+                        product.quantity -= item.quantity
+                        product.save()
+                order.status = 'paid'
+                order.save()
+
+        return Response({"errorCode": 0, "message": "Success"})
+
 
 # --- PHẦN DÀNH CHO SHIPPER ---
 
